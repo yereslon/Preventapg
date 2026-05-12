@@ -216,7 +216,9 @@ export default function App() {
             </div>
             <CartPanel
               cart={cart}
+              onSumarUno={sumarUno}
               onQuitarUno={quitarUno}
+              onCambiarCantidad={cambiarCantidad}
               onEliminar={eliminar}
               onVaciar={vaciar}
               onVerPedido={() => {
