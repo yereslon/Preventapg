@@ -11,6 +11,16 @@
 *, *::before, *::after { box-sizing: border-box; }
 body { margin: 0; background: #f5f6fa; font-family: 'Segoe UI', system-ui, sans-serif; }
 
+/* Animación bump del carrito al agregar producto */
+@keyframes cartBump {
+  0%   { transform: scale(1) rotate(0deg); }
+  25%  { transform: scale(1.35) rotate(-12deg); }
+  55%  { transform: scale(1.15) rotate(7deg); }
+  80%  { transform: scale(1.05) rotate(-3deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+.cart-bump { animation: cartBump 0.45s ease-out; display: inline-block; }
+
 /* Oculta las flechas del input numérico en todos los navegadores */
 input[type=number]::-webkit-outer-spin-button,
 input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }

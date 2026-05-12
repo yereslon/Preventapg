@@ -35,6 +35,7 @@ export default function App() {
   const [categoriaActiva, setCategoriaActiva] = useState('Todas');
   const [busqueda, setBusqueda] = useState('');
   const [carritoAbierto, setCarritoAbierto] = useState(false);
+  const [cartBumpKey, setCartBumpKey] = useState(0);
   const [ultimoPedido, setUltimoPedido] = useState<OrderSummary | null>(null);
 
   const categorias = useMemo(() => {
@@ -52,7 +53,7 @@ export default function App() {
 
   function handleAgregar(item: CatalogItem, cantidad: number) {
     agregar(item, cantidad);
-    if (!carritoAbierto) setCarritoAbierto(true);
+    setCartBumpKey(k => k + 1);
   }
 
   function handleConfirmar(form: OrderFormData) {
@@ -77,7 +78,7 @@ export default function App() {
   if (vista === 'confirmado' && ultimoPedido) {
     return (
       <>
-        <AppHeader busqueda="" setBusqueda={() => {}} totalUnidades={0} onCarritoClick={() => {}} />
+        <AppHeader busqueda="" setBusqueda={() => {}} totalUnidades={0} cartBumpKey={0} onCarritoClick={() => {}} />
         <Suspense
           fallback={
             <div className="flex items-center justify-center h-64 gap-3 text-gray-500">
@@ -104,6 +105,7 @@ export default function App() {
           busqueda={busqueda}
           setBusqueda={setBusqueda}
           totalUnidades={cart.totalUnidades}
+          cartBumpKey={0}
           onCarritoClick={() => setVista('catalogo')}
         />
         <CartReview
@@ -127,6 +129,7 @@ export default function App() {
         busqueda={busqueda}
         setBusqueda={setBusqueda}
         totalUnidades={cart.totalUnidades}
+        cartBumpKey={cartBumpKey}
         onCarritoClick={() => setCarritoAbierto(o => !o)}
       />
 
@@ -238,11 +241,13 @@ function AppHeader({
   busqueda,
   setBusqueda,
   totalUnidades,
+  cartBumpKey,
   onCarritoClick,
 }: {
   busqueda: string;
   setBusqueda: (v: string) => void;
   totalUnidades: number;
+  cartBumpKey: number;
   onCarritoClick: () => void;
 }) {
   return (
@@ -282,7 +287,7 @@ function AppHeader({
           onClick={onCarritoClick}
           className="relative flex items-center gap-2 bg-white/15 hover:bg-white/25 border border-white/20 text-white px-3 py-2 rounded-lg transition text-sm font-semibold flex-shrink-0"
         >
-          <span>🛒</span>
+          <span key={cartBumpKey} className={cartBumpKey > 0 ? 'cart-bump' : ''}>🛒</span>
           <span className="hidden sm:inline">Pedido</span>
           {totalUnidades > 0 && (
             <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-black w-5 h-5 rounded-full flex items-center justify-center">
