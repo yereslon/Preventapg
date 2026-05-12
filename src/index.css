@@ -1,0 +1,17 @@
+@import "tailwindcss";
+
+:root {
+  --rojo: #c0392b;
+  --rojo-dark: #96281b;
+  --rojo-light: #e74c3c;
+  --azul: #1a3a6b;
+  --azul-mid: #2554a0;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; background: #f5f6fa; font-family: 'Segoe UI', system-ui, sans-serif; }
+
+/* Oculta las flechas del input numérico en todos los navegadores */
+input[type=number]::-webkit-outer-spin-button,
+input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+input[type=number] { -moz-appearance: textfield; }
