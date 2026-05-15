@@ -29,7 +29,7 @@ function fechaHoy(): string {
 
 export default function App() {
   const { data, ubicaciones, whatsapp, loading, error } = useExcelData();
-  const { cart, agregar, sumarUno, quitarUno, cambiarCantidad, eliminar, vaciar } = useCart();
+  const { cart, agregar, sumarUno, quitarUno, cambiarCantidad, cambiarPrecio, eliminar, vaciar } = useCart();
 
   const [vista, setVista] = useState<Vista>('catalogo');
   const [categoriaActiva, setCategoriaActiva] = useState('Todas');
@@ -51,8 +51,8 @@ export default function App() {
     });
   }, [data, categoriaActiva, busqueda]);
 
-  function handleAgregar(item: CatalogItem, cantidad: number) {
-    agregar(item, cantidad);
+  function handleAgregar(item: CatalogItem, cantidad: number, precioOverride?: number, unidadOverride?: string, opcionIdx?: number) {
+    agregar(item, cantidad, precioOverride, unidadOverride, opcionIdx);
     setCartBumpKey(k => k + 1);
   }
 
@@ -115,6 +115,7 @@ export default function App() {
           onQuitarUno={quitarUno}
           onCambiarCantidad={cambiarCantidad}
           onEliminar={eliminar}
+          onCambiarPrecio={cambiarPrecio}
           onVolver={() => setVista('catalogo')}
           onConfirmar={handleConfirmar}
         />

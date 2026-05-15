@@ -20,7 +20,8 @@ export function generarMensajeWA(summary: OrderSummary): string {
 
   for (const item of summary.items) {
     const subtotal = formatSolesPlano(item.precio * item.cantidad);
-    lineas.push(`• ${item.nombre} (x${item.cantidad}) — ${subtotal}`);
+    const unidadPart = item.unidad ? ` [${item.unidad}]` : '';
+    lineas.push(`• ${item.nombre}${unidadPart} (x${item.cantidad}) — ${subtotal}`);
   }
 
   lineas.push('');

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import * as XLSX from 'xlsx';
-import type { CatalogItem, ExcelRow } from '../types/catalog';
+import type { CatalogItem, ExcelRow, PrecioUnidad } from '../types/catalog';
 import { WA_DEFAULT } from '../utils/whatsapp';
 
 interface UseExcelDataResult {
@@ -11,16 +11,32 @@ interface UseExcelDataResult {
   error: string | null;
 }
 
+function parsePrice(val: unknown): number | null {
+  if (val === '' || val === null || val === undefined) return null;
+  const n = typeof val === 'number' ? val : parseFloat(String(val).replace(/[^0-9.-]/g, ''));
+  return isFinite(n) && n > 0 ? n : null;
+}
+
 function normalizeRow(row: ExcelRow, index: number): CatalogItem {
   const categoria = String(row['Categoría'] ?? row['Categoria'] ?? '').trim();
   const nombre = String(row['Producto'] ?? '').trim();
-  const precioRaw = row['Precio'];
-  const precio =
-    typeof precioRaw === 'number'
-      ? precioRaw
-      : parseFloat(String(precioRaw ?? '0').replace(/[^0-9.-]/g, '')) || 0;
-  const unidad = String(row['Unidad'] ?? '').trim();
-  return { id: index + 1, nombre, categoria, precio, unidad };
+
+  const preciosExtra: PrecioUnidad[] = [];
+  for (let n = 1; n <= 2; n++) {
+    const unidad = String(row[`Unidad ${n}` as keyof ExcelRow] ?? '').trim();
+    if (!unidad) continue;
+    const precio = parsePrice(row[`Precio ${n}` as keyof ExcelRow]) ?? 0;
+    preciosExtra.push({ unidad, precio });
+  }
+
+  return {
+    id: index + 1,
+    nombre,
+    categoria,
+    precio: preciosExtra[0]?.precio ?? 0,
+    unidad: preciosExtra[0]?.unidad ?? '',
+    preciosExtra,
+  };
 }
 
 /**

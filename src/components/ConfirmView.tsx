@@ -11,6 +11,17 @@ interface Props {
   onNuevoPedido: () => void;
 }
 
+function nombreArchivoPDF(summary: OrderSummary): string {
+  const cliente = summary.form.nombre
+    .trim()
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-zA-Z0-9 ]/g, '')
+    .trim()
+    .replace(/\s+/g, '_');
+  const fecha = summary.fecha.replace(/\//g, '-');
+  return `Pedido_${cliente}_${fecha}.pdf`;
+}
+
 // Web Share API soporta archivos en este dispositivo
 function puedeCompartirArchivos(): boolean {
   try {
@@ -32,7 +43,7 @@ export function ConfirmView({ summary, whatsapp, onNuevoPedido }: Props) {
       const blob = await pdf(<OrderPDF summary={summary} />).toBlob();
       const archivo = new File(
         [blob],
-        `pedido-${summary.numeroPedido}.pdf`,
+        nombreArchivoPDF(summary),
         { type: 'application/pdf' }
       );
 
@@ -53,7 +64,7 @@ export function ConfirmView({ summary, whatsapp, onNuevoPedido }: Props) {
         // Fallback silencioso: descargar
         try {
           const blob = await pdf(<OrderPDF summary={summary} />).toBlob();
-          descargarBlob(blob, `pedido-${summary.numeroPedido}.pdf`);
+          descargarBlob(blob, nombreArchivoPDF(summary));
         } catch { /* noop */ }
       }
     } finally {
@@ -141,7 +152,7 @@ export function ConfirmView({ summary, whatsapp, onNuevoPedido }: Props) {
           <div className="grid grid-cols-2 gap-3 pt-1">
             <PDFDownloadLink
               document={<OrderPDF summary={summary} />}
-              fileName={`pedido-${summary.numeroPedido}.pdf`}
+              fileName={nombreArchivoPDF(summary)}
               className="flex flex-col items-center justify-center gap-1 bg-white border border-gray-200 hover:border-[#1a3a6b] hover:bg-blue-50 rounded-xl p-3 transition-all text-xs font-semibold text-gray-600 hover:text-[#1a3a6b] shadow-sm"
             >
               {({ loading }) => (

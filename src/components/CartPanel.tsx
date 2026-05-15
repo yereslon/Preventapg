@@ -4,10 +4,10 @@ import { QuantityInput } from './QuantityInput';
 
 interface Props {
   cart: CartState;
-  onSumarUno: (id: number) => void;
-  onQuitarUno: (id: number) => void;
-  onCambiarCantidad: (id: number, cantidad: number) => void;
-  onEliminar: (id: number) => void;
+  onSumarUno: (cartKey: string) => void;
+  onQuitarUno: (cartKey: string) => void;
+  onCambiarCantidad: (cartKey: string, cantidad: number) => void;
+  onEliminar: (cartKey: string) => void;
   onVaciar: () => void;
   onVerPedido: () => void;
 }
@@ -54,13 +54,13 @@ export function CartPanel({
           </div>
         ) : (
           cart.items.map(item => (
-            <div key={item.id} className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+            <div key={item.cartKey} className="bg-gray-50 border border-gray-200 rounded-lg p-3">
               <div className="flex justify-between items-start gap-2">
                 <p className="text-xs font-semibold text-gray-800 leading-snug flex-1">
                   {item.nombre}
                 </p>
                 <button
-                  onClick={() => onEliminar(item.id)}
+                  onClick={() => onEliminar(item.cartKey)}
                   className="text-gray-300 hover:text-red-500 transition-colors text-sm leading-none flex-shrink-0"
                   title="Eliminar"
                 >
@@ -72,9 +72,9 @@ export function CartPanel({
                 <QuantityInput
                   size="sm"
                   value={item.cantidad}
-                  onIncrement={() => onSumarUno(item.id)}
-                  onDecrement={() => onQuitarUno(item.id)}
-                  onChange={v => onCambiarCantidad(item.id, v)}
+                  onIncrement={() => onSumarUno(item.cartKey)}
+                  onDecrement={() => onQuitarUno(item.cartKey)}
+                  onChange={v => onCambiarCantidad(item.cartKey, v)}
                 />
                 <span className="text-xs font-bold text-red-700 flex-shrink-0">
                   {formatSoles(item.precio * item.cantidad)}

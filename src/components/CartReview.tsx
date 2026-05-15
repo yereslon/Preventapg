@@ -8,10 +8,11 @@ import { QuantityInput } from './QuantityInput';
 interface Props {
   cart: CartState;
   ubicaciones: string[];
-  onSumarUno: (id: number) => void;
-  onQuitarUno: (id: number) => void;
-  onCambiarCantidad: (id: number, cantidad: number) => void;
-  onEliminar: (id: number) => void;
+  onSumarUno: (cartKey: string) => void;
+  onQuitarUno: (cartKey: string) => void;
+  onCambiarCantidad: (cartKey: string, cantidad: number) => void;
+  onEliminar: (cartKey: string) => void;
+  onCambiarPrecio: (cartKey: string, precio: number) => void;
   onVolver: () => void;
   onConfirmar: (form: OrderFormData) => void;
 }
@@ -25,11 +26,14 @@ export function CartReview({
   onQuitarUno,
   onCambiarCantidad,
   onEliminar,
+  onCambiarPrecio,
   onVolver,
   onConfirmar,
 }: Props) {
   const [form, setForm] = useState<OrderFormData>(FORM_VACIO);
   const [errors, setErrors] = useState<Partial<Record<keyof OrderFormData, string>>>({});
+  const [editingPriceId, setEditingPriceId] = useState<string | null>(null);
+  const [tempPrice, setTempPrice] = useState('');
 
   function validate(): boolean {
     const next: Partial<Record<keyof OrderFormData, string>> = {};
@@ -41,6 +45,25 @@ export function CartReview({
 
   function handleConfirmar() {
     if (validate()) onConfirmar(form);
+  }
+
+  function startEditPrice(cartKey: string, precio: number) {
+    setEditingPriceId(cartKey);
+    setTempPrice(String(precio));
+  }
+
+  function confirmEditPrice(cartKey: string) {
+    const parsed = parseFloat(tempPrice.replace(/[^0-9.-]/g, ''));
+    if (isFinite(parsed) && parsed > 0) {
+      onCambiarPrecio(cartKey, parsed);
+    }
+    setEditingPriceId(null);
+    setTempPrice('');
+  }
+
+  function cancelEditPrice() {
+    setEditingPriceId(null);
+    setTempPrice('');
   }
 
   const vacio = cart.items.length === 0;
@@ -89,44 +112,99 @@ export function CartReview({
                 </span>
               </h2>
 
-              <div className="bg-white rounded-xl border border-gray-200 shadow-sm divide-y divide-gray-100 overflow-hidden">
+              <div className="space-y-3">
                 {cart.items.map(item => (
-                  <div key={item.id} className="p-4 flex gap-3">
-                    {/* Info */}
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-bold text-gray-800 leading-snug">
-                        {item.nombre}
-                      </p>
-                      <p className="text-xs text-gray-400 mt-0.5">
-                        {item.categoria} · {item.unidad}
-                      </p>
-                      <p className="text-xs text-gray-500 mt-1">
-                        {formatSoles(item.precio)} c/u
-                      </p>
-                    </div>
+                  <div key={item.cartKey} className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
 
-                    {/* Controles cantidad */}
-                    <div className="flex flex-col items-end justify-between gap-2">
+                    {/* Cabecera: nombre + eliminar */}
+                    <div className="flex items-start justify-between gap-3 px-4 pt-4 pb-2">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="inline-block text-[10px] font-semibold uppercase tracking-wide text-blue-700 bg-blue-50 border border-blue-100 rounded-full px-2 py-0.5">
+                            {item.categoria}
+                          </span>
+                          <span className="inline-block text-[10px] font-semibold text-gray-500 bg-gray-100 rounded-full px-2 py-0.5">
+                            {item.unidad}
+                          </span>
+                        </div>
+                        <p className="text-sm font-bold text-gray-800 leading-snug">
+                          {item.nombre}
+                        </p>
+                      </div>
                       <button
-                        onClick={() => onEliminar(item.id)}
-                        className="text-gray-300 hover:text-red-500 text-sm transition-colors leading-none"
+                        onClick={() => onEliminar(item.cartKey)}
+                        className="mt-0.5 flex-shrink-0 w-6 h-6 flex items-center justify-center rounded-full text-gray-400 hover:bg-red-50 hover:text-red-500 transition-colors text-xs"
                         title="Eliminar"
                       >
                         ✕
                       </button>
+                    </div>
 
+                    {/* Pie: precio, editar, cantidad, subtotal */}
+                    <div className="flex items-center gap-3 px-4 pb-4 pt-2 border-t border-gray-100">
+
+                      {/* Precio + editar */}
+                      <div className="flex-1 min-w-0">
+                        {editingPriceId === item.cartKey ? (
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-xs text-gray-400">S/.</span>
+                            <input
+                              type="number"
+                              min="0.01"
+                              step="0.01"
+                              value={tempPrice}
+                              onChange={e => setTempPrice(e.target.value)}
+                              onKeyDown={e => {
+                                if (e.key === 'Enter') confirmEditPrice(item.cartKey);
+                                if (e.key === 'Escape') cancelEditPrice();
+                              }}
+                              className="w-20 text-sm font-bold border border-[#1a3a6b] rounded-lg px-2 py-1 text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#1a3a6b]/20"
+                              autoFocus
+                            />
+                            <button
+                              onClick={() => confirmEditPrice(item.cartKey)}
+                              className="px-2 py-1 rounded-lg bg-green-500 hover:bg-green-600 text-white text-xs font-bold transition-colors"
+                            >
+                              ✓
+                            </button>
+                            <button
+                              onClick={cancelEditPrice}
+                              className="px-2 py-1 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs font-bold transition-colors"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-extrabold text-gray-800">
+                              {formatSoles(item.precio)}
+                            </span>
+                            <span className="text-xs text-gray-400">c/u</span>
+                            <button
+                              onClick={() => startEditPrice(item.cartKey, item.precio)}
+                              className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#1a3a6b]/8 hover:bg-[#1a3a6b]/15 text-[#1a3a6b] text-[11px] font-semibold transition-colors border border-[#1a3a6b]/20"
+                            >
+                              ✎ Editar
+                            </button>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Cantidad */}
                       <QuantityInput
                         size="md"
                         value={item.cantidad}
-                        onIncrement={() => onSumarUno(item.id)}
-                        onDecrement={() => onQuitarUno(item.id)}
-                        onChange={v => onCambiarCantidad(item.id, v)}
+                        onIncrement={() => onSumarUno(item.cartKey)}
+                        onDecrement={() => onQuitarUno(item.cartKey)}
+                        onChange={v => onCambiarCantidad(item.cartKey, v)}
                       />
 
-                      <p className="text-sm font-extrabold text-red-700">
+                      {/* Subtotal */}
+                      <p className="text-sm font-extrabold text-[#c0392b] w-20 text-right flex-shrink-0">
                         {formatSoles(item.precio * item.cantidad)}
                       </p>
                     </div>
+
                   </div>
                 ))}
               </div>
