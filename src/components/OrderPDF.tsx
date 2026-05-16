@@ -13,10 +13,16 @@ const BLANCO_75 = '#bfcbde'; // blanco al 75% sobre fondo azul
 const BLANCO_60 = '#a8bdcf'; // blanco al 60%
 
 const s = StyleSheet.create({
-  page: { fontFamily: 'Helvetica', fontSize: 9, color: TEXTO, backgroundColor: BLANCO },
+  page: {
+    fontFamily: 'Helvetica', fontSize: 9, color: TEXTO, backgroundColor: BLANCO,
+    paddingTop: 114,   /* header (76) + gap (14) + tableColHeader (~24) */
+    paddingBottom: 50,
+  },
 
   /* Header */
   header: {
+    position: 'absolute' as const,
+    top: 0, left: 0, right: 0,
     backgroundColor: AZUL,
     paddingHorizontal: 32,
     paddingVertical: 20,
@@ -40,7 +46,7 @@ const s = StyleSheet.create({
   orderDate:   { color: BLANCO_60, fontSize: 8, marginTop: 2 },
 
   /* Body */
-  body: { paddingHorizontal: 32, paddingVertical: 20 },
+  body: { paddingHorizontal: 32, paddingTop: 8 },
 
   /* Info cliente */
   infoBox: {
@@ -77,11 +83,13 @@ const s = StyleSheet.create({
     borderBottomStyle: 'solid',
   },
   tableRowAlt: { backgroundColor: GRIS_BG },
+  colNum:      { width: 22 },
   colProducto: { flex: 4 },
   colCant:     { flex: 1 },
   colPrecio:   { flex: 2 },
   colSubtotal: { flex: 2 },
   tdBold: { fontFamily: 'Helvetica-Bold' },
+  tdNum:  { color: SUAVE, fontSize: 7 },
 
   /* Total */
   totalRow: {
@@ -133,7 +141,7 @@ export function OrderPDF({ summary }: { summary: OrderSummary }) {
       <Page size="A4" style={s.page}>
 
         {/* ── Header ── */}
-        <View style={s.header}>
+        <View style={s.header} fixed>
           <View style={s.headerLeft}>
             <View style={s.badge}>
               <Text style={s.badgeText}>PG</Text>
@@ -148,6 +156,23 @@ export function OrderPDF({ summary }: { summary: OrderSummary }) {
             <Text style={s.orderDate}>{summary.fecha}</Text>
           </View>
         </View>
+
+        {/* ── Encabezado de columnas fijo (páginas 2+) ── */}
+        <View
+          fixed
+          style={{ position: 'absolute', top: 90, left: 32, right: 32 }}
+          render={({ pageNumber }) =>
+            pageNumber === 1 ? <View /> : (
+              <View style={s.tableHeader}>
+                <Text style={[s.thText, s.colNum]}>N°</Text>
+                <Text style={[s.thText, s.colProducto]}>Producto</Text>
+                <Text style={[s.thText, s.colCant]}>Cant.</Text>
+                <Text style={[s.thText, s.colPrecio]}>P. Unit.</Text>
+                <Text style={[s.thText, s.colSubtotal]}>Subtotal</Text>
+              </View>
+            )
+          }
+        />
 
         {/* ── Body ── */}
         <View style={s.body}>
@@ -168,8 +193,9 @@ export function OrderPDF({ summary }: { summary: OrderSummary }) {
             </View>
           </View>
 
-          {/* Encabezado tabla */}
+          {/* Encabezado tabla (página 1) */}
           <View style={s.tableHeader}>
+            <Text style={[s.thText, s.colNum]}>N°</Text>
             <Text style={[s.thText, s.colProducto]}>Producto</Text>
             <Text style={[s.thText, s.colCant]}>Cant.</Text>
             <Text style={[s.thText, s.colPrecio]}>P. Unit.</Text>
@@ -178,12 +204,18 @@ export function OrderPDF({ summary }: { summary: OrderSummary }) {
 
           {/* Filas */}
           {summary.items.map((item, i) => (
-            <View key={item.id} style={[s.tableRow, i % 2 !== 0 ? s.tableRowAlt : {}]}>
+            <View key={item.id} wrap={false} style={[s.tableRow, i % 2 !== 0 ? s.tableRowAlt : {}]}>
+              <Text style={[s.colNum, s.tdNum]}>{i + 1}</Text>
               <View style={s.colProducto}>
                 <Text style={s.tdBold}>{item.nombre}</Text>
                 <Text style={{ color: SUAVE, fontSize: 7, marginTop: 1 }}>
                   {item.categoria} · {item.unidad}
                 </Text>
+                {item.nota ? (
+                  <Text style={{ color: ROJO, fontSize: 7, marginTop: 2, fontFamily: 'Helvetica-Oblique' }}>
+                    {item.nota}
+                  </Text>
+                ) : null}
               </View>
               <Text style={s.colCant}>{item.cantidad}</Text>
               <Text style={s.colPrecio}>{fmt(item.precio)}</Text>
@@ -194,14 +226,14 @@ export function OrderPDF({ summary }: { summary: OrderSummary }) {
           ))}
 
           {/* Total */}
-          <View style={s.totalRow}>
+          <View wrap={false} style={s.totalRow}>
             <Text style={s.totalLabel}>TOTAL</Text>
             <Text style={s.totalValue}>{fmt(summary.total)}</Text>
           </View>
 
           {/* Notas */}
           {summary.form.notas.trim() !== '' && (
-            <View style={s.notasBox}>
+            <View wrap={false} style={s.notasBox}>
               <Text style={s.notasLabel}>NOTAS ADICIONALES</Text>
               <Text style={s.notasText}>{summary.form.notas}</Text>
             </View>
@@ -210,8 +242,11 @@ export function OrderPDF({ summary }: { summary: OrderSummary }) {
 
         {/* ── Footer ── */}
         <View style={s.footer} fixed>
-          <Text style={s.footerText}>Plásticos Guerrero — Documento generado automáticamente</Text>
-          <Text style={s.footerText}>{summary.numeroPedido}</Text>
+          <Text style={s.footerText}>{summary.numeroPedido} · Plásticos Guerrero</Text>
+          <Text
+            style={s.footerText}
+            render={({ pageNumber, totalPages }) => `Página ${pageNumber} de ${totalPages}`}
+          />
         </View>
 
       </Page>

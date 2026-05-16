@@ -6,25 +6,26 @@ function formatSolesPlano(valor: number): string {
   return 'S/. ' + valor.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
+const SEPARADOR = '————————————————';
+
 export function generarMensajeWA(summary: OrderSummary): string {
   const lineas: string[] = [];
 
   lineas.push('*🧾 Plásticos Guerrero — Orden de Preventa*');
-  lineas.push(`📅 Fecha: ${summary.fecha}`);
-  lineas.push(`🔖 Pedido: ${summary.numeroPedido}`);
+  lineas.push(`📅 ${summary.fecha}`);
   lineas.push('');
   lineas.push(`*Cliente:* ${summary.form.nombre}`);
   lineas.push(`*Zona de entrega:* ${summary.form.ubicacion}`);
   lineas.push('');
-  lineas.push('*Productos:*');
 
   for (const item of summary.items) {
-    const subtotal = formatSolesPlano(item.precio * item.cantidad);
-    const unidadPart = item.unidad ? ` [${item.unidad}]` : '';
-    lineas.push(`• ${item.nombre}${unidadPart} (x${item.cantidad}) — ${subtotal}`);
+    const cant = parseFloat(item.cantidad.toFixed(3));
+    lineas.push(`${cant} ${item.unidad} — ${item.nombre}`);
+    lineas.push(`P. unit.: ${formatSolesPlano(item.precio)}   |   Total: ${formatSolesPlano(item.precio * item.cantidad)}`);
+    if (item.nota) lineas.push(`_📝 ${item.nota}_`);
+    lineas.push(SEPARADOR);
   }
 
-  lineas.push('');
   lineas.push(`*TOTAL: ${formatSolesPlano(summary.total)}*`);
 
   if (summary.form.notas.trim()) {

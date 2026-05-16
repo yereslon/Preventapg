@@ -1,4 +1,4 @@
-import { useState, useMemo, lazy, Suspense } from 'react';
+import { useState, useMemo, useEffect, lazy, Suspense } from 'react';
 import { useExcelData } from './hooks/useExcelData';
 import { useCart } from './hooks/useCart';
 import { ProductCard } from './components/ProductCard';
@@ -7,6 +7,7 @@ import { CartReview } from './components/CartReview';
 import { CategoryFilter } from './components/CategoryFilter';
 import type { CatalogItem, OrderFormData } from './types/catalog';
 import type { OrderSummary } from './types/order';
+import { buscarProductos } from './utils/busqueda';
 
 // Lazy load para aislar @react-pdf/renderer del bundle inicial
 const ConfirmView = lazy(() =>
@@ -29,14 +30,20 @@ function fechaHoy(): string {
 
 export default function App() {
   const { data, ubicaciones, whatsapp, loading, error } = useExcelData();
-  const { cart, agregar, sumarUno, quitarUno, cambiarCantidad, cambiarPrecio, eliminar, vaciar } = useCart();
+  const { cart, agregar, sumarUno, quitarUno, cambiarCantidad, cambiarPrecio, cambiarNota, eliminar, vaciar } = useCart();
 
   const [vista, setVista] = useState<Vista>('catalogo');
   const [categoriaActiva, setCategoriaActiva] = useState('Todas');
   const [busqueda, setBusqueda] = useState('');
+  const [busquedaFiltro, setBusquedaFiltro] = useState('');
   const [carritoAbierto, setCarritoAbierto] = useState(false);
   const [cartBumpKey, setCartBumpKey] = useState(0);
   const [ultimoPedido, setUltimoPedido] = useState<OrderSummary | null>(null);
+
+  useEffect(() => {
+    const t = setTimeout(() => setBusquedaFiltro(busqueda), 220);
+    return () => clearTimeout(t);
+  }, [busqueda]);
 
   const categorias = useMemo(() => {
     const set = new Set(data.map(i => i.categoria).filter(Boolean));
@@ -44,16 +51,35 @@ export default function App() {
   }, [data]);
 
   const productosFiltrados = useMemo(() => {
-    return data.filter(item => {
-      const matchCat = categoriaActiva === 'Todas' || item.categoria === categoriaActiva;
-      const matchBusqueda = item.nombre.toLowerCase().includes(busqueda.toLowerCase());
-      return matchCat && matchBusqueda;
-    });
-  }, [data, categoriaActiva, busqueda]);
+    const porCategoria = categoriaActiva === 'Todas'
+      ? data
+      : data.filter(i => i.categoria === categoriaActiva);
 
-  function handleAgregar(item: CatalogItem, cantidad: number, precioOverride?: number, unidadOverride?: string, opcionIdx?: number) {
-    agregar(item, cantidad, precioOverride, unidadOverride, opcionIdx);
+    if (!busquedaFiltro.trim()) {
+      return [...porCategoria].sort((a, b) => {
+        const cat = a.categoria.localeCompare(b.categoria, 'es');
+        return cat !== 0 ? cat : a.nombre.localeCompare(b.nombre, 'es');
+      });
+    }
+
+    return buscarProductos(porCategoria, busquedaFiltro);
+  }, [data, categoriaActiva, busquedaFiltro]);
+
+  function handleAgregar(item: CatalogItem, cantidad: number, precioOverride?: number, unidadOverride?: string, opcionIdx?: number, nota?: string) {
+    agregar(item, cantidad, precioOverride, unidadOverride, opcionIdx, nota);
     setCartBumpKey(k => k + 1);
+  }
+
+  function handleAgregarManual(nombre: string, categoria: string, unidad: string, precio: number, cantidad: number) {
+    const item: CatalogItem = {
+      id: -Date.now(),
+      nombre,
+      categoria,
+      precio,
+      unidad,
+      preciosExtra: [{ unidad, precio }],
+    };
+    agregar(item, cantidad, precio, unidad, 0);
   }
 
   function handleConfirmar(form: OrderFormData) {
@@ -116,6 +142,8 @@ export default function App() {
           onCambiarCantidad={cambiarCantidad}
           onEliminar={eliminar}
           onCambiarPrecio={cambiarPrecio}
+          onCambiarNota={cambiarNota}
+          onAgregarManual={handleAgregarManual}
           onVolver={() => setVista('catalogo')}
           onConfirmar={handleConfirmar}
         />
@@ -166,11 +194,15 @@ export default function App() {
                   onChange={setCategoriaActiva}
                 />
               </div>
-              <p className="text-xs text-gray-400 mb-4">
-                {productosFiltrados.length} producto
-                {productosFiltrados.length !== 1 ? 's' : ''}
-                {categoriaActiva !== 'Todas' && ` en "${categoriaActiva}"`}
-                {busqueda && ` · búsqueda: "${busqueda}"`}
+              <p className="text-xs text-gray-400 mb-4 flex items-center gap-2">
+                <span>
+                  {productosFiltrados.length} producto{productosFiltrados.length !== 1 ? 's' : ''}
+                  {categoriaActiva !== 'Todas' && ` en "${categoriaActiva}"`}
+                  {busquedaFiltro && ` · "${busquedaFiltro}"`}
+                </span>
+                {busqueda !== busquedaFiltro && (
+                  <span className="text-[10px] text-gray-300 animate-pulse">buscando…</span>
+                )}
               </p>
               {productosFiltrados.length === 0 ? (
                 <div className="text-center py-20 text-gray-400 text-sm">
@@ -274,14 +306,20 @@ function AppHeader({
           </div>
         </div>
 
-        <div className="flex-1 max-w-md hidden sm:block">
+        <div className="flex-1 max-w-md hidden sm:block relative">
           <input
             type="search"
-            placeholder="Buscar producto..."
+            placeholder="Buscar por nombre, categoría…"
             value={busqueda}
             onChange={e => setBusqueda(e.target.value)}
-            className="w-full px-4 py-2 rounded-lg bg-white/15 text-white placeholder-white/60 border border-white/20 outline-none focus:bg-white/25 focus:border-white/50 transition text-sm"
+            className="w-full pl-4 pr-8 py-2 rounded-lg bg-white/15 text-white placeholder-white/60 border border-white/20 outline-none focus:bg-white/25 focus:border-white/50 transition text-sm"
           />
+          {busqueda && (
+            <button
+              onClick={() => setBusqueda('')}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-white/50 hover:text-white text-base leading-none transition-colors"
+            >✕</button>
+          )}
         </div>
 
         <button
@@ -298,14 +336,20 @@ function AppHeader({
         </button>
       </div>
 
-      <div className="sm:hidden px-4 pb-3">
+      <div className="sm:hidden px-4 pb-3 relative">
         <input
           type="search"
-          placeholder="Buscar producto..."
+          placeholder="Buscar por nombre, categoría…"
           value={busqueda}
           onChange={e => setBusqueda(e.target.value)}
-          className="w-full px-4 py-2 rounded-lg bg-white/15 text-white placeholder-white/60 border border-white/20 outline-none focus:bg-white/25 transition text-sm"
+          className="w-full pl-4 pr-8 py-2 rounded-lg bg-white/15 text-white placeholder-white/60 border border-white/20 outline-none focus:bg-white/25 transition text-sm"
         />
+        {busqueda && (
+          <button
+            onClick={() => setBusqueda('')}
+            className="absolute right-6 top-1/2 -translate-y-1/2 text-white/50 hover:text-white text-base leading-none transition-colors"
+          >✕</button>
+        )}
       </div>
     </header>
   );
