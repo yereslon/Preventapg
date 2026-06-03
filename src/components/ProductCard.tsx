@@ -4,6 +4,7 @@ import { formatSoles } from '../utils/format';
 
 interface Props {
   item: CatalogItem;
+  precioNegociado?: number;
   onAgregar: (item: CatalogItem, cantidad: number, precioOverride?: number, unidadOverride?: string, opcionIdx?: number, nota?: string) => void;
 }
 
@@ -27,7 +28,7 @@ function getCategoriaColor(categoria: string) {
 }
 
 /* ── Tarjeta simplificada ─────────────────────────────── */
-export function ProductCard({ item, onAgregar }: Props) {
+export function ProductCard({ item, precioNegociado, onAgregar }: Props) {
   const [modalOpen, setModalOpen] = useState(false);
   const color = getCategoriaColor(item.categoria);
 
@@ -49,6 +50,18 @@ export function ProductCard({ item, onAgregar }: Props) {
           </h3>
         </div>
 
+        {/* Precio negociado */}
+        {precioNegociado !== undefined && (
+          <div className="px-4 pb-2 -mt-1">
+            <p className="text-sm font-black text-red-600">
+              {formatSoles(precioNegociado)}
+              <span className="text-xs text-gray-400 line-through ml-1.5 font-normal">
+                {formatSoles(item.precio)}
+              </span>
+            </p>
+          </div>
+        )}
+
         {/* Botón agregar */}
         <div className="px-3 pb-3">
           <button
@@ -64,6 +77,7 @@ export function ProductCard({ item, onAgregar }: Props) {
         <ProductModal
           item={item}
           color={color}
+          precioNegociado={precioNegociado}
           onClose={() => setModalOpen(false)}
           onAgregar={(it, cant, precio, unidad, idx) => {
             onAgregar(it, cant, precio, unidad, idx);
@@ -79,11 +93,12 @@ export function ProductCard({ item, onAgregar }: Props) {
 interface ModalProps {
   item: CatalogItem;
   color: { bg: string; text: string; dot: string };
+  precioNegociado?: number;
   onClose: () => void;
   onAgregar: (item: CatalogItem, cantidad: number, precioOverride?: number, unidadOverride?: string, opcionIdx?: number, nota?: string) => void;
 }
 
-function ProductModal({ item, color, onClose, onAgregar }: ModalProps) {
+function ProductModal({ item, color, precioNegociado, onClose, onAgregar }: ModalProps) {
   const allOpciones = item.preciosExtra;
   const hasDropdown = allOpciones.length > 1;
 
@@ -96,10 +111,12 @@ function ProductModal({ item, color, onClose, onAgregar }: ModalProps) {
 
   const selectedOpcion = allOpciones[selectedIdx] ?? { unidad: item.unidad, precio: item.precio };
 
-  // Sync precio input when unit changes
+  // Sync precio input when unit changes — pre-fill with negotiated price if available
   useEffect(() => {
-    setPrecioInput(selectedOpcion.precio > 0 ? String(selectedOpcion.precio) : '');
-  }, [selectedIdx, selectedOpcion.precio]);
+    const base = selectedOpcion.precio > 0 ? selectedOpcion.precio : 0;
+    const negociado = precioNegociado !== undefined ? precioNegociado : base;
+    setPrecioInput(negociado > 0 ? String(negociado) : '');
+  }, [selectedIdx, selectedOpcion.precio, precioNegociado]);
 
   function handleUnitChange(idx: number) {
     setSelectedIdx(idx);
