@@ -27,6 +27,8 @@ interface Props {
   onAgregarManual: (nombre: string, categoria: string, unidad: string, precio: number, cantidad: number) => void;
   onVolver: () => void;
   onConfirmar: (form: OrderFormData) => void;
+  readOnlyDatos?: boolean;
+  formInicial?: OrderFormData;
 }
 
 const FORM_VACIO: OrderFormData = { nombre: '', ubicacion: '', notas: '' };
@@ -43,8 +45,10 @@ export function CartReview({
   onAgregarManual,
   onVolver,
   onConfirmar,
+  readOnlyDatos = false,
+  formInicial,
 }: Props) {
-  const [form, setForm] = useState<OrderFormData>(FORM_VACIO);
+  const [form, setForm] = useState<OrderFormData>(formInicial ?? FORM_VACIO);
   const [errors, setErrors] = useState<Partial<Record<keyof OrderFormData, string>>>({});
   const [editingPriceId, setEditingPriceId] = useState<string | null>(null);
   const [tempPrice, setTempPrice] = useState('');
@@ -400,6 +404,7 @@ export function CartReview({
                   ubicaciones={ubicaciones}
                   onChange={setForm}
                   errors={errors}
+                  readOnlyDatos={readOnlyDatos}
                 />
               </div>
 

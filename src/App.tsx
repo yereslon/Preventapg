@@ -1,38 +1,33 @@
 import { useState, useMemo, useEffect, lazy, Suspense } from 'react';
 import { useExcelData } from './hooks/useExcelData';
-import { useCart } from './hooks/useCart';
+import { useClients } from './hooks/useClients';
+import { useClientRegistry } from './hooks/useClientRegistry';
 import { ProductCard } from './components/ProductCard';
 import { CartPanel } from './components/CartPanel';
 import { CartReview } from './components/CartReview';
 import { CategoryFilter } from './components/CategoryFilter';
-import type { CatalogItem, OrderFormData } from './types/catalog';
+import { TabBar } from './components/TabBar';
+import { ClientModal } from './components/ClientModal';
+import { UltimosProductos } from './components/UltimosProductos';
+import type { CatalogItem } from './types/catalog';
 import type { OrderSummary } from './types/order';
 import { buscarProductos } from './utils/busqueda';
 
-// Lazy load para aislar @react-pdf/renderer del bundle inicial
 const ConfirmView = lazy(() =>
   import('./components/ConfirmView').then(m => ({ default: m.ConfirmView }))
 );
 
-type Vista = 'catalogo' | 'revision' | 'confirmado';
-
-function generarNumeroPedido(): string {
-  return 'PED-' + Date.now().toString(36).toUpperCase();
-}
-
-function fechaHoy(): string {
-  return new Date().toLocaleDateString('es-PE', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-  });
-}
-
 export default function App() {
   const { data, ubicaciones, whatsapp, loading, error } = useExcelData();
-  const { cart, agregar, sumarUno, quitarUno, cambiarCantidad, cambiarPrecio, cambiarNota, eliminar, vaciar } = useCart();
+  const { clientes } = useClientRegistry();
+  const {
+    sesiones, activoId, sesionActiva, modalAbierto, setModalAbierto,
+    cart, crearSesion, cerrarSesion, setActivo, confirmarSesion,
+    setVista, getPrecioNegociado,
+    agregar, sumarUno, quitarUno, cambiarCantidad, cambiarPrecio,
+    cambiarNota, eliminar, vaciar, agregarManual,
+  } = useClients();
 
-  const [vista, setVista] = useState<Vista>('catalogo');
   const [categoriaActiva, setCategoriaActiva] = useState('Todas');
   const [busqueda, setBusqueda] = useState('');
   const [busquedaFiltro, setBusquedaFiltro] = useState('');
@@ -45,6 +40,8 @@ export default function App() {
     return () => clearTimeout(t);
   }, [busqueda]);
 
+  const vista = sesionActiva?.vista ?? 'catalogo';
+
   const categorias = useMemo(() => {
     const set = new Set(data.map(i => i.categoria).filter(Boolean));
     return ['Todas', ...Array.from(set).sort()];
@@ -54,85 +51,79 @@ export default function App() {
     const porCategoria = categoriaActiva === 'Todas'
       ? data
       : data.filter(i => i.categoria === categoriaActiva);
-
     if (!busquedaFiltro.trim()) {
       return [...porCategoria].sort((a, b) => {
         const cat = a.categoria.localeCompare(b.categoria, 'es');
         return cat !== 0 ? cat : a.nombre.localeCompare(b.nombre, 'es');
       });
     }
-
     return buscarProductos(porCategoria, busquedaFiltro);
   }, [data, categoriaActiva, busquedaFiltro]);
 
-  function handleAgregar(item: CatalogItem, cantidad: number, precioOverride?: number, unidadOverride?: string, opcionIdx?: number, nota?: string) {
+  function handleAgregar(
+    item: CatalogItem,
+    cantidad: number,
+    precioOverride?: number,
+    unidadOverride?: string,
+    opcionIdx?: number,
+    nota?: string,
+  ) {
     agregar(item, cantidad, precioOverride, unidadOverride, opcionIdx, nota);
     setCartBumpKey(k => k + 1);
   }
 
-  function handleAgregarManual(nombre: string, categoria: string, unidad: string, precio: number, cantidad: number) {
-    const item: CatalogItem = {
-      id: -Date.now(),
-      nombre,
-      categoria,
-      precio,
-      unidad,
-      preciosExtra: [{ unidad, precio }],
-    };
-    agregar(item, cantidad, precio, unidad, 0);
-  }
-
-  function handleConfirmar(form: OrderFormData) {
-    const summary: OrderSummary = {
-      numeroPedido: generarNumeroPedido(),
-      fecha: fechaHoy(),
-      form,
-      items: [...cart.items],
-      total: cart.total,
-    };
+  function handleConfirmar(form: Parameters<typeof confirmarSesion>[0]) {
+    const summary = confirmarSesion(form);
     setUltimoPedido(summary);
-    vaciar();
-    setVista('confirmado');
   }
 
-  function handleNuevoPedido() {
-    setUltimoPedido(null);
-    setVista('catalogo');
+  function handleCerrarPestana(id: string) {
+    const sesion = sesiones.find(s => s.id === id);
+    if (sesion && sesion.items.length > 0) {
+      if (!confirm(`¿Cerrar la pestaña de ${sesion.nombre}? Se perderá el pedido en curso.`)) return;
+    }
+    cerrarSesion(id);
   }
 
-  // ── Vista: confirmado ────────────────────────────────
-  if (vista === 'confirmado' && ultimoPedido) {
-    return (
-      <>
-        <AppHeader busqueda="" setBusqueda={() => {}} totalUnidades={0} cartBumpKey={0} onCarritoClick={() => {}} />
-        <Suspense
-          fallback={
-            <div className="flex items-center justify-center h-64 gap-3 text-gray-500">
-              <div className="w-8 h-8 border-4 border-gray-200 border-t-blue-600 rounded-full animate-spin" />
-              <span className="text-sm">Preparando confirmación...</span>
-            </div>
-          }
-        >
-          <ConfirmView
-            summary={ultimoPedido}
-            whatsapp={whatsapp}
-            onNuevoPedido={handleNuevoPedido}
-          />
-        </Suspense>
-      </>
-    );
-  }
+  // ── ConfirmView overlay ──────────────────────────────
+  const confirmOverlay = ultimoPedido && (
+    <Suspense fallback={null}>
+      <ConfirmView
+        summary={ultimoPedido}
+        whatsapp={whatsapp}
+        onCerrar={() => setUltimoPedido(null)}
+      />
+    </Suspense>
+  );
+
+  // ── Modal de cliente ─────────────────────────────────
+  const clientModal = modalAbierto && (
+    <ClientModal
+      clientes={clientes}
+      sesionesActivas={sesiones}
+      onConfirmar={crearSesion}
+      onCancelar={() => setModalAbierto(false)}
+      puedeCancelar={sesiones.length > 0}
+    />
+  );
 
   // ── Vista: revisión ──────────────────────────────────
   if (vista === 'revision') {
     return (
       <>
         <AppHeader
-          busqueda={busqueda}
-          setBusqueda={setBusqueda}
-          totalUnidades={cart.totalUnidades}
+          busqueda=""
+          setBusqueda={() => {}}
+          totalUnidades={0}
           cartBumpKey={0}
-          onCarritoClick={() => setVista('catalogo')}
+          onCarritoClick={() => {}}
+        />
+        <TabBar
+          sesiones={sesiones}
+          activoId={activoId}
+          onSeleccionar={setActivo}
+          onCerrar={handleCerrarPestana}
+          onNuevo={() => setModalAbierto(true)}
         />
         <CartReview
           cart={cart}
@@ -143,10 +134,14 @@ export default function App() {
           onEliminar={eliminar}
           onCambiarPrecio={cambiarPrecio}
           onCambiarNota={cambiarNota}
-          onAgregarManual={handleAgregarManual}
+          onAgregarManual={agregarManual}
           onVolver={() => setVista('catalogo')}
           onConfirmar={handleConfirmar}
+          readOnlyDatos
+          formInicial={sesionActiva?.orderForm}
         />
+        {confirmOverlay}
+        {clientModal}
       </>
     );
   }
@@ -162,8 +157,15 @@ export default function App() {
         onCarritoClick={() => setCarritoAbierto(o => !o)}
       />
 
+      <TabBar
+        sesiones={sesiones}
+        activoId={activoId}
+        onSeleccionar={setActivo}
+        onCerrar={handleCerrarPestana}
+        onNuevo={() => setModalAbierto(true)}
+      />
+
       <div className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 py-6 flex gap-6">
-        {/* Catálogo */}
         <main className="flex-1 min-w-0">
           {loading && (
             <div className="flex flex-col items-center justify-center h-64 gap-4 text-gray-500">
@@ -185,9 +187,17 @@ export default function App() {
             </div>
           )}
 
-          {!loading && !error && (
+          {!loading && !error && sesionActiva && (
             <>
-              <div className="mb-5">
+              <UltimosProductos
+                productos={sesionActiva.ultimosProductos}
+                catalogData={data}
+                onAgregar={(item, cant, precio, unidad, idx) => {
+                  handleAgregar(item, cant, precio, unidad, idx);
+                }}
+                clienteNombre={sesionActiva.nombre}
+              />
+              <div className="mt-5 mb-5">
                 <CategoryFilter
                   categorias={categorias}
                   activa={categoriaActiva}
@@ -210,17 +220,34 @@ export default function App() {
                 </div>
               ) : (
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-                  {productosFiltrados.map(item => (
-                    <ProductCard key={item.id} item={item} onAgregar={handleAgregar} />
-                  ))}
+                  {productosFiltrados.map(item => {
+                    const negociado = getPrecioNegociado(item.nombre, item.unidad);
+                    return (
+                      <ProductCard
+                        key={item.id}
+                        item={item}
+                        precioNegociado={negociado}
+                        onAgregar={handleAgregar}
+                      />
+                    );
+                  })}
                 </div>
               )}
             </>
           )}
+
+          {!loading && !error && !sesionActiva && (
+            <div className="text-center py-24 text-gray-400">
+              <p className="text-4xl mb-4">👤</p>
+              <p className="text-sm">
+                No hay cliente activo. Crea una nueva pestaña para comenzar.
+              </p>
+            </div>
+          )}
         </main>
 
         {/* Panel carrito desktop */}
-        <aside className="hidden lg:flex flex-col w-80 flex-shrink-0 bg-white rounded-xl border border-gray-200 shadow-sm p-5 h-[calc(100vh-5rem)] sticky top-20">
+        <aside className="hidden lg:flex flex-col w-80 flex-shrink-0 bg-white rounded-xl border border-gray-200 shadow-sm p-5 h-[calc(100vh-8rem)] sticky top-20">
           <CartPanel
             cart={cart}
             onSumarUno={sumarUno}
@@ -242,7 +269,9 @@ export default function App() {
           />
           <div className="w-80 bg-white h-full shadow-2xl flex flex-col p-5 overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
-              <span className="font-bold text-gray-800">Tu Pedido</span>
+              <span className="font-bold text-gray-800">
+                Pedido — {sesionActiva?.nombre ?? '—'}
+              </span>
               <button
                 onClick={() => setCarritoAbierto(false)}
                 className="text-gray-400 hover:text-gray-700 text-xl leading-none"
@@ -265,6 +294,9 @@ export default function App() {
           </div>
         </div>
       )}
+
+      {confirmOverlay}
+      {clientModal}
     </div>
   );
 }
@@ -318,7 +350,9 @@ function AppHeader({
             <button
               onClick={() => setBusqueda('')}
               className="absolute right-2.5 top-1/2 -translate-y-1/2 text-white/50 hover:text-white text-base leading-none transition-colors"
-            >✕</button>
+            >
+              ✕
+            </button>
           )}
         </div>
 
@@ -348,7 +382,9 @@ function AppHeader({
           <button
             onClick={() => setBusqueda('')}
             className="absolute right-6 top-1/2 -translate-y-1/2 text-white/50 hover:text-white text-base leading-none transition-colors"
-          >✕</button>
+          >
+            ✕
+          </button>
         )}
       </div>
     </header>

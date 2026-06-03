@@ -26,7 +26,7 @@ function parsePrice(val: unknown): number | null {
   return isFinite(n) && n > 0 ? n : null;
 }
 
-function normalizeRow(row: ExcelRow, index: number): CatalogItem {
+function normalizeRow(row: ExcelRow): CatalogItem {
   const categoria = String(row['Categoría'] ?? row['Categoria'] ?? '').trim();
   const nombre = String(row['Producto'] ?? '').trim();
 
@@ -132,7 +132,7 @@ export function useExcelData(filePath = `${import.meta.env.BASE_URL}catalogo.xls
         const worksheet = workbook.Sheets[sheetName];
         const rows = XLSX.utils.sheet_to_json<ExcelRow>(worksheet, { defval: '' });
         const items = rows
-          .map((row, i) => normalizeRow(row, i))
+          .map(row => normalizeRow(row))
           .filter(item => item.nombre !== '');
 
         const config = parseConfiguracion(workbook);
