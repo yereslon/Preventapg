@@ -12,6 +12,13 @@ dist
 dist-ssr
 *.local
 
+# Excel lock files (archivo abierto en Excel)
+~$*.xlsx
+
+# Claude Code tooling — nunca al repo
+.claude/
+.superpowers/
+
 # El Excel DEBE estar en el repo para que funcione en GitHub Pages
 # Si no quieres que los precios sean públicos, considera otra estrategia de despliegue
 # public/catalogo.xlsx
