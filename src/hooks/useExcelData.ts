@@ -3,6 +3,15 @@ import * as XLSX from 'xlsx';
 import type { CatalogItem, ExcelRow, PrecioUnidad } from '../types/catalog';
 import { WA_DEFAULT } from '../utils/whatsapp';
 
+export function djb2(s: string): number {
+  let h = 5381;
+  for (let i = 0; i < s.length; i++) {
+    h = Math.imul((h << 5) + h, 1) ^ s.charCodeAt(i);
+    h = h >>> 0;
+  }
+  return h >>> 0;
+}
+
 interface UseExcelDataResult {
   data: CatalogItem[];
   ubicaciones: string[];
@@ -30,7 +39,7 @@ function normalizeRow(row: ExcelRow, index: number): CatalogItem {
   }
 
   return {
-    id: index + 1,
+    id: djb2(nombre + '\0' + categoria),
     nombre,
     categoria,
     precio: preciosExtra[0]?.precio ?? 0,
