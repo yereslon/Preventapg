@@ -1,73 +1,50 @@
-# React + TypeScript + Vite
+# PreventaPG — Catálogo de Pedidos
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+App de gestión de pedidos para el equipo de ventas de **Plásticos Guerrero**. Permite atender múltiples clientes en simultáneo, generar PDFs de pedido y enviarlos por WhatsApp.
 
-Currently, two official plugins are available:
+## Características
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **Múltiples clientes en simultáneo** — pestañas independientes por cliente
+- **Historial de precios** — carga automáticamente los precios negociados de pedidos anteriores
+- **Últimos productos** — acceso rápido a los productos del último pedido de cada cliente
+- **PDF + WhatsApp** — confirmación de pedido descargable y enviable
+- **Sin backend** — todo corre en el navegador, datos en `localStorage`
 
-## React Compiler
+## Archivos Excel
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Coloca los siguientes archivos en la carpeta `/public`:
 
-## Expanding the ESLint configuration
+### `catalogo.xlsx`
+Primera hoja con las columnas:
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+| Categoría | Producto | Unidad 1 | Precio 1 | Unidad 2 | Precio 2 |
+|-----------|----------|----------|----------|----------|----------|
+| Bolsas | Bolsa Negra 5kg | paq | 12.50 | und | 0.85 |
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+Hoja adicional `Configuracion` (opcional):
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+| Tipo | Valor |
+|------|-------|
+| Ubicación | Lima Norte |
+| WhatsApp | 51963243948 |
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### `clientes.xlsx`
+Primera hoja con la lista de clientes registrados:
+
+| Cliente | Ubicacion |
+|---------|-----------|
+| Juan García | Lima Norte |
+| María Pérez | Miraflores |
+
+## Desarrollo local
+
+```bash
+npm install
+npm run dev        # http://localhost:5173
+npm test           # tests unitarios
+npm run build      # build de producción
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Deploy (GitHub Pages)
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+El deploy a GitHub Pages es automático al hacer push a `main` si tienes configurado el workflow de GitHub Actions. La app detecta la variable `GITHUB_REPOSITORY` para configurar el `base` path automáticamente.
