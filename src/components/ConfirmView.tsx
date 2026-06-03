@@ -8,7 +8,7 @@ import { formatSoles } from '../utils/format';
 interface Props {
   summary: OrderSummary;
   whatsapp: string;
-  onNuevoPedido: () => void;
+  onCerrar: () => void;
 }
 
 function nombreArchivoPDF(summary: OrderSummary): string {
@@ -31,7 +31,7 @@ function puedeCompartirArchivos(): boolean {
   }
 }
 
-export function ConfirmView({ summary, whatsapp, onNuevoPedido }: Props) {
+export function ConfirmView({ summary, whatsapp, onCerrar }: Props) {
   const [compartiendo, setCompartiendo] = useState(false);
   const waUrl = urlWhatsApp(whatsapp, summary);
   const soportaShare = puedeCompartirArchivos();
@@ -184,7 +184,7 @@ export function ConfirmView({ summary, whatsapp, onNuevoPedido }: Props) {
 
         {/* Nuevo pedido */}
         <button
-          onClick={onNuevoPedido}
+          onClick={onCerrar}
           className="w-full py-3 rounded-xl text-sm font-bold text-white transition-colors"
           style={{ background: '#1a3a6b' }}
           onMouseEnter={e => (e.currentTarget.style.background = '#2554a0')}

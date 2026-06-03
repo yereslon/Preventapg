@@ -5,9 +5,10 @@ interface Props {
   ubicaciones: string[];
   onChange: (form: OrderFormData) => void;
   errors: Partial<Record<keyof OrderFormData, string>>;
+  readOnlyDatos?: boolean;
 }
 
-export function OrderForm({ form, ubicaciones, onChange, errors }: Props) {
+export function OrderForm({ form, ubicaciones, onChange, errors, readOnlyDatos = false }: Props) {
   function set(field: keyof OrderFormData, value: string) {
     onChange({ ...form, [field]: value });
   }
@@ -22,12 +23,15 @@ export function OrderForm({ form, ubicaciones, onChange, errors }: Props) {
         <input
           type="text"
           value={form.nombre}
-          onChange={e => set('nombre', e.target.value)}
+          onChange={readOnlyDatos ? undefined : e => set('nombre', e.target.value)}
+          readOnly={readOnlyDatos}
           placeholder="Ej: Juan Pérez"
           className={`w-full px-4 py-2.5 rounded-lg border text-sm outline-none transition
-            ${errors.nombre
-              ? 'border-red-400 bg-red-50 focus:border-red-500 focus:ring-2 focus:ring-red-100'
-              : 'border-gray-200 bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100'
+            ${readOnlyDatos
+              ? 'border-gray-200 bg-gray-50 text-gray-600 cursor-default'
+              : errors.nombre
+                ? 'border-red-400 bg-red-50 focus:border-red-500 focus:ring-2 focus:ring-red-100'
+                : 'border-gray-200 bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100'
             }`}
         />
         {errors.nombre && (
@@ -40,7 +44,7 @@ export function OrderForm({ form, ubicaciones, onChange, errors }: Props) {
         <label className="block text-sm font-semibold text-gray-700 mb-1">
           Ubicación / Zona de entrega <span className="text-red-500">*</span>
         </label>
-        {ubicaciones.length > 0 ? (
+        {ubicaciones.length > 0 && !readOnlyDatos ? (
           <select
             value={form.ubicacion}
             onChange={e => set('ubicacion', e.target.value)}
@@ -59,16 +63,19 @@ export function OrderForm({ form, ubicaciones, onChange, errors }: Props) {
           <input
             type="text"
             value={form.ubicacion}
-            onChange={e => set('ubicacion', e.target.value)}
+            onChange={readOnlyDatos ? undefined : e => set('ubicacion', e.target.value)}
+            readOnly={readOnlyDatos}
             placeholder="Escribe tu distrito o zona"
             className={`w-full px-4 py-2.5 rounded-lg border text-sm outline-none transition
-              ${errors.ubicacion
-                ? 'border-red-400 bg-red-50 focus:border-red-500 focus:ring-2 focus:ring-red-100'
-                : 'border-gray-200 bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100'
+              ${readOnlyDatos
+                ? 'border-gray-200 bg-gray-50 text-gray-600 cursor-default'
+                : errors.ubicacion
+                  ? 'border-red-400 bg-red-50 focus:border-red-500 focus:ring-2 focus:ring-red-100'
+                  : 'border-gray-200 bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100'
               }`}
           />
         )}
-        {ubicaciones.length === 0 && (
+        {!readOnlyDatos && ubicaciones.length === 0 && (
           <p className="text-xs text-amber-600 mt-1">
             Agrega una hoja "Configuracion" con columna "Ubicación" en el Excel para habilitar el selector.
           </p>
