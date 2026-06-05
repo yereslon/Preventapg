@@ -14,9 +14,19 @@ export interface ProductoHistorial {
   categoria: string;
 }
 
+export interface PedidoHistorial {
+  numeroPedido: string;
+  fecha: string;
+  total: number;
+  ubicacion: string;
+  notas: string;
+  items: CartItem[];
+}
+
 export interface ClienteHistorial {
   ultimosProductos: ProductoHistorial[];
   preciosNegociados: Record<string, number>;
+  pedidos: PedidoHistorial[];
 }
 
 export interface ClientSession {
