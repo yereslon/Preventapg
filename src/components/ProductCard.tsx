@@ -132,17 +132,29 @@ function ProductModal({ item, color, precioNegociado, onClose, onAgregar }: Moda
     const clean = v.replace(/[^0-9.]/g, '');
     setCantidadRaw(clean);
     const num = parseFloat(clean);
-    if (!isNaN(num) && num >= 1) setCantidad(num);
+    if (!isNaN(num) && num > 0) setCantidad(num);
+  }
+
+  function snapCantidad(num: number): number {
+    const floor = Math.floor(num);
+    const frac = num - floor;
+    let snapped: number;
+    if (frac < 0.125) snapped = floor;
+    else if (frac < 0.375) snapped = floor + 0.25;
+    else if (frac < 0.625) snapped = floor + 0.5;
+    else snapped = floor + 1;
+    return Math.max(0.25, snapped);
   }
 
   function handleCantidadBlur() {
     const num = parseFloat(cantidadRaw);
-    if (isNaN(num) || num < 1) {
-      setCantidad(1);
-      setCantidadRaw('1');
+    if (isNaN(num) || num < 0.25) {
+      setCantidad(0.25);
+      setCantidadRaw('0.25');
     } else {
-      setCantidad(num);
-      setCantidadRaw(String(num));
+      const snapped = snapCantidad(num);
+      setCantidad(snapped);
+      setCantidadRaw(String(parseFloat(snapped.toFixed(3))));
     }
   }
 
@@ -231,8 +243,8 @@ function ProductModal({ item, color, precioNegociado, onClose, onAgregar }: Moda
               </button>
               <input
                 type="number"
-                min="1"
-                step="1"
+                min="0.25"
+                step="any"
                 value={cantidadRaw}
                 onChange={e => handleCantidadChange(e.target.value)}
                 onFocus={e => e.target.select()}
