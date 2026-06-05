@@ -184,7 +184,7 @@ export default function App() {
       <AppHeader
         busqueda={busqueda}
         setBusqueda={setBusqueda}
-        totalUnidades={cart.totalUnidades}
+        totalUnidades={cart.items.length}
         cartBumpKey={cartBumpKey}
         onCarritoClick={() => setCarritoAbierto(o => !o)}
         onRecargar={() => window.location.reload()}
