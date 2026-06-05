@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import type { CatalogItem, OrderFormData } from '../types/catalog';
 import type { CartItem, CartState } from '../types/cart';
-import type { ClientSession, ClienteHistorial, ProductoHistorial } from '../types/clients';
+import type { ClientSession, ClienteHistorial, ProductoHistorial, PedidoHistorial } from '../types/clients';
 import type { OrderSummary } from '../types/order';
 
 const SESIONES_KEY = 'pg_sesiones';
@@ -23,12 +23,19 @@ function histKey(nombre: string): string {
 function cargarHistorial(nombre: string): ClienteHistorial {
   try {
     const raw = localStorage.getItem(histKey(nombre));
-    if (raw) return JSON.parse(raw) as ClienteHistorial;
+    if (raw) {
+      const parsed = JSON.parse(raw) as ClienteHistorial;
+      return { pedidos: [], ...parsed };
+    }
   } catch { /* ignore */ }
-  return { ultimosProductos: [], preciosNegociados: {} };
+  return { ultimosProductos: [], preciosNegociados: {}, pedidos: [] };
 }
 
-function buildHistorial(items: CartItem[]): ClienteHistorial {
+function buildHistorial(
+  items: CartItem[],
+  historialPrevio: ClienteHistorial,
+  nuevoPedido: PedidoHistorial,
+): ClienteHistorial {
   const ultimosProductos: ProductoHistorial[] = items.slice(0, 10).map(i => ({
     nombre: i.nombre,
     precio: i.precio,
@@ -45,7 +52,9 @@ function buildHistorial(items: CartItem[]): ClienteHistorial {
     }
   });
 
-  return { ultimosProductos, preciosNegociados };
+  const pedidos = [nuevoPedido, ...(historialPrevio.pedidos ?? [])].slice(0, 30);
+
+  return { ultimosProductos, preciosNegociados, pedidos };
 }
 
 function cargarSesiones(): ClientSession[] {
@@ -152,7 +161,19 @@ export function useClients() {
     };
 
     try {
-      localStorage.setItem(histKey(sesion.nombre), JSON.stringify(buildHistorial(sesion.items)));
+      const historialPrevio = cargarHistorial(sesion.nombre);
+      const nuevoPedido: PedidoHistorial = {
+        numeroPedido: summary.numeroPedido,
+        fecha: summary.fecha,
+        total: summary.total,
+        ubicacion: summary.form.ubicacion,
+        notas: summary.form.notas,
+        items: [...sesion.items],
+      };
+      localStorage.setItem(
+        histKey(sesion.nombre),
+        JSON.stringify(buildHistorial(sesion.items, historialPrevio, nuevoPedido))
+      );
     } catch { /* quota */ }
 
     const next = sesiones.filter(s => s.id !== activoId);

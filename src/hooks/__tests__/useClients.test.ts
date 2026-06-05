@@ -16,10 +16,10 @@ const PRODUCTO = {
 };
 
 describe('useClients — sesiones', () => {
-  it('abre el modal automáticamente si no hay sesiones', () => {
+  it('no abre el modal automáticamente si no hay sesiones', () => {
     const { result } = renderHook(() => useClients());
     expect(result.current.sesiones).toHaveLength(0);
-    expect(result.current.modalAbierto).toBe(true);
+    expect(result.current.modalAbierto).toBe(false);
   });
 
   it('crearSesion añade una sesión y la activa', () => {
@@ -54,12 +54,12 @@ describe('useClients — sesiones', () => {
     expect(result.current.sesionActiva?.nombre).toBe('Luis');
   });
 
-  it('abre el modal cuando se cierra la última sesión', () => {
+  it('no abre el modal al cerrar la última sesión', () => {
     const { result } = renderHook(() => useClients());
     act(() => { result.current.crearSesion('Ana', 'Surco', true); });
     const id = result.current.sesionActiva!.id;
     act(() => { result.current.cerrarSesion(id); });
-    expect(result.current.modalAbierto).toBe(true);
+    expect(result.current.modalAbierto).toBe(false);
   });
 });
 
@@ -165,5 +165,64 @@ describe('useClients — confirmarSesion', () => {
     });
     const hist = JSON.parse(localStorage.getItem('pg_hist_maria_perez')!);
     expect(hist.preciosNegociados['Bolsa Negra 5kg_paq']).toBe(9.00);
+  });
+
+  it('guarda pedido completo con items en el historial al confirmar', () => {
+    const { result } = renderHook(() => useClients());
+    act(() => { result.current.crearSesion('Ana Rios', 'San Isidro', false); });
+    act(() => { result.current.agregar(PRODUCTO, 3, 12.5); });
+    act(() => {
+      result.current.confirmarSesion({ nombre: 'Ana Rios', ubicacion: 'San Isidro', notas: '' });
+    });
+    const raw = localStorage.getItem('pg_hist_ana_rios');
+    const hist = JSON.parse(raw!);
+    expect(hist.pedidos).toHaveLength(1);
+    expect(hist.pedidos[0].items).toHaveLength(1);
+    expect(hist.pedidos[0].items[0].nombre).toBe('Bolsa Negra 5kg');
+    expect(hist.pedidos[0].items[0].cantidad).toBe(3);
+    expect(hist.pedidos[0].total).toBe(37.5);
+  });
+
+  it('acumula pedidos en historial — mas reciente primero', () => {
+    const { result } = renderHook(() => useClients());
+    act(() => { result.current.crearSesion('Ana Rios', 'San Isidro', false); });
+    act(() => { result.current.agregar(PRODUCTO, 2); });
+    act(() => {
+      result.current.confirmarSesion({ nombre: 'Ana Rios', ubicacion: 'San Isidro', notas: '' });
+    });
+    act(() => { result.current.crearSesion('Ana Rios', 'San Isidro', false); });
+    act(() => { result.current.agregar(PRODUCTO, 5); });
+    act(() => {
+      result.current.confirmarSesion({ nombre: 'Ana Rios', ubicacion: 'San Isidro', notas: '' });
+    });
+    const hist = JSON.parse(localStorage.getItem('pg_hist_ana_rios')!);
+    expect(hist.pedidos).toHaveLength(2);
+    expect(hist.pedidos[0].items[0].cantidad).toBe(5);
+    expect(hist.pedidos[1].items[0].cantidad).toBe(2);
+  });
+
+  it('limita pedidos a 30 entradas', () => {
+    const { result } = renderHook(() => useClients());
+    const pedidosPrevios = Array.from({ length: 30 }, (_, i) => ({
+      numeroPedido: `PED-${i}`,
+      fecha: '01/01/2026',
+      total: 10,
+      ubicacion: 'Lima',
+      notas: '',
+      items: [],
+    }));
+    localStorage.setItem('pg_hist_luis_torres', JSON.stringify({
+      ultimosProductos: [],
+      preciosNegociados: {},
+      pedidos: pedidosPrevios,
+    }));
+    act(() => { result.current.crearSesion('Luis Torres', 'Lima', false); });
+    act(() => { result.current.agregar(PRODUCTO, 1); });
+    act(() => {
+      result.current.confirmarSesion({ nombre: 'Luis Torres', ubicacion: 'Lima', notas: '' });
+    });
+    const hist = JSON.parse(localStorage.getItem('pg_hist_luis_torres')!);
+    expect(hist.pedidos).toHaveLength(30);
+    expect(hist.pedidos[0].items).toHaveLength(1);
   });
 });
