@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect, useRef, lazy, Suspense } from 'react';
 import { exportarDatos, importarDatos } from './utils/backup';
 import { useInstallPrompt } from './hooks/useInstallPrompt';
+import { HistorialView } from './components/HistorialView';
 import { useExcelData } from './hooks/useExcelData';
 import { useClients } from './hooks/useClients';
 import { useClientRegistry } from './hooks/useClientRegistry';
@@ -24,7 +25,7 @@ export default function App() {
   const { clientes } = useClientRegistry();
   const {
     sesiones, activoId, sesionActiva, modalAbierto, setModalAbierto,
-    cart, crearSesion, cerrarSesion, setActivo, confirmarSesion,
+    cart, crearSesion, crearSesionConItems, cerrarSesion, setActivo, confirmarSesion,
     setVista, getPrecioNegociado,
     agregar, sumarUno, quitarUno, cambiarCantidad, cambiarPrecio,
     cambiarNota, eliminar, vaciar, agregarManual,
@@ -36,6 +37,7 @@ export default function App() {
   const [carritoAbierto, setCarritoAbierto] = useState(false);
   const [cartBumpKey, setCartBumpKey] = useState(0);
   const [ultimoPedido, setUltimoPedido] = useState<OrderSummary | null>(null);
+  const [historialAbierto, setHistorialAbierto] = useState(false);
 
   useEffect(() => {
     const t = setTimeout(() => setBusquedaFiltro(busqueda), 220);
@@ -98,6 +100,39 @@ export default function App() {
     />
   );
 
+  // ── Vista: historial ────────────────────────────────
+  if (historialAbierto) {
+    return (
+      <>
+        <AppHeader
+          busqueda=""
+          setBusqueda={() => {}}
+          totalUnidades={0}
+          cartBumpKey={0}
+          onCarritoClick={() => {}}
+          onRecargar={() => window.location.reload()}
+          onHistorial={() => setHistorialAbierto(true)}
+        />
+        <TabBar
+          sesiones={sesiones}
+          activoId={activoId}
+          onSeleccionar={setActivo}
+          onCerrar={handleCerrarPestana}
+          onNuevo={() => setModalAbierto(true)}
+        />
+        <HistorialView
+          onCerrar={() => setHistorialAbierto(false)}
+          onAbrirPedido={(nombre, ubicacion, items) => {
+            crearSesionConItems(nombre, ubicacion, items);
+            setVista('revision');
+            setHistorialAbierto(false);
+          }}
+        />
+        {clientModal}
+      </>
+    );
+  }
+
   // ── Vista: confirmado ────────────────────────────────
   if (ultimoPedido) {
     return (
@@ -109,6 +144,7 @@ export default function App() {
           cartBumpKey={0}
           onCarritoClick={() => {}}
           onRecargar={() => window.location.reload()}
+          onHistorial={() => setHistorialAbierto(true)}
         />
         <TabBar
           sesiones={sesiones}
@@ -150,6 +186,7 @@ export default function App() {
           cartBumpKey={0}
           onCarritoClick={() => {}}
           onRecargar={() => window.location.reload()}
+          onHistorial={() => setHistorialAbierto(true)}
         />
         <TabBar
           sesiones={sesiones}
@@ -188,6 +225,7 @@ export default function App() {
         cartBumpKey={cartBumpKey}
         onCarritoClick={() => setCarritoAbierto(o => !o)}
         onRecargar={() => window.location.reload()}
+        onHistorial={() => setHistorialAbierto(true)}
       />
 
       <TabBar
@@ -337,6 +375,7 @@ function AppHeader({
   cartBumpKey,
   onCarritoClick,
   onRecargar,
+  onHistorial,
 }: {
   busqueda: string;
   setBusqueda: (v: string) => void;
@@ -344,6 +383,7 @@ function AppHeader({
   cartBumpKey: number;
   onCarritoClick: () => void;
   onRecargar: () => void;
+  onHistorial: () => void;
 }) {
   const [menuAbierto, setMenuAbierto] = useState(false);
   const [importError, setImportError] = useState('');
@@ -439,6 +479,13 @@ function AppHeader({
 
           {menuAbierto && (
             <div className="absolute right-0 top-11 bg-white rounded-xl shadow-2xl border border-gray-100 py-1 w-48 z-50">
+              <button
+                onClick={() => { onHistorial(); setMenuAbierto(false); }}
+                className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+              >
+                <span>&#9203;</span> Historial de pedidos
+              </button>
+              <div className="border-t border-gray-100 my-1" />
               {puedeInstalar && (
                 <>
                   <button
