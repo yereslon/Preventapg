@@ -25,7 +25,7 @@ function cargarHistorial(nombre: string): ClienteHistorial {
     const raw = localStorage.getItem(histKey(nombre));
     if (raw) {
       const parsed = JSON.parse(raw) as ClienteHistorial;
-      return { pedidos: [], ...parsed };
+      return { ...parsed, pedidos: parsed.pedidos ?? [] };
     }
   } catch { /* ignore */ }
   return { ultimosProductos: [], preciosNegociados: {}, pedidos: [] };
