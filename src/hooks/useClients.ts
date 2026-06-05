@@ -84,7 +84,7 @@ export function useClients() {
   const initial = cargarSesiones();
   const [sesiones, setSesionesRaw] = useState<ClientSession[]>(initial);
   const [activoId, setActivoId] = useState<string | null>(initial[0]?.id ?? null);
-  const [modalAbierto, setModalAbierto] = useState<boolean>(initial.length === 0);
+  const [modalAbierto, setModalAbierto] = useState<boolean>(false);
 
   function setSesiones(next: ClientSession[]) {
     setSesionesRaw(next);
@@ -131,7 +131,7 @@ export function useClients() {
     setSesiones(next);
     if (activoId === id) {
       setActivoId(next[0]?.id ?? null);
-      if (next.length === 0) setModalAbierto(true);
+      // modal no se abre automáticamente — el usuario usa ＋ Nuevo
     }
   }
 

@@ -1,4 +1,5 @@
-import { useState, useMemo, useEffect, lazy, Suspense } from 'react';
+import { useState, useMemo, useEffect, useRef, lazy, Suspense } from 'react';
+import { exportarDatos, importarDatos } from './utils/backup';
 import { useExcelData } from './hooks/useExcelData';
 import { useClients } from './hooks/useClients';
 import { useClientRegistry } from './hooks/useClientRegistry';
@@ -103,7 +104,7 @@ export default function App() {
       sesionesActivas={sesiones}
       onConfirmar={crearSesion}
       onCancelar={() => setModalAbierto(false)}
-      puedeCancelar={sesiones.length > 0}
+      puedeCancelar={true}
     />
   );
 
@@ -117,6 +118,7 @@ export default function App() {
           totalUnidades={0}
           cartBumpKey={0}
           onCarritoClick={() => {}}
+          onRecargar={() => window.location.reload()}
         />
         <TabBar
           sesiones={sesiones}
@@ -155,6 +157,7 @@ export default function App() {
         totalUnidades={cart.totalUnidades}
         cartBumpKey={cartBumpKey}
         onCarritoClick={() => setCarritoAbierto(o => !o)}
+        onRecargar={() => window.location.reload()}
       />
 
       <TabBar
@@ -187,16 +190,19 @@ export default function App() {
             </div>
           )}
 
-          {!loading && !error && sesionActiva && (
+          {!loading && !error && (
             <>
-              <UltimosProductos
-                productos={sesionActiva.ultimosProductos}
-                catalogData={data}
-                onAgregar={(item, cant, precio, unidad, idx) => {
-                  handleAgregar(item, cant, precio, unidad, idx);
-                }}
-                clienteNombre={sesionActiva.nombre}
-              />
+              {sesionActiva && (
+                <UltimosProductos
+                  productos={sesionActiva.ultimosProductos}
+                  catalogData={data}
+                  onAgregar={(item, cant, precio, unidad, idx) => {
+                    handleAgregar(item, cant, precio, unidad, idx);
+                  }}
+                  clienteNombre={sesionActiva.nombre}
+                />
+              )}
+
               <div className="mt-5 mb-5">
                 <CategoryFilter
                   categorias={categorias}
@@ -204,6 +210,7 @@ export default function App() {
                   onChange={setCategoriaActiva}
                 />
               </div>
+
               <p className="text-xs text-gray-400 mb-4 flex items-center gap-2">
                 <span>
                   {productosFiltrados.length} producto{productosFiltrados.length !== 1 ? 's' : ''}
@@ -214,6 +221,7 @@ export default function App() {
                   <span className="text-[10px] text-gray-300 animate-pulse">buscando…</span>
                 )}
               </p>
+
               {productosFiltrados.length === 0 ? (
                 <div className="text-center py-20 text-gray-400 text-sm">
                   No se encontraron productos.
@@ -227,22 +235,13 @@ export default function App() {
                         key={item.id}
                         item={item}
                         precioNegociado={negociado}
-                        onAgregar={handleAgregar}
+                        onAgregar={!sesionActiva ? () => setModalAbierto(true) : handleAgregar}
                       />
                     );
                   })}
                 </div>
               )}
             </>
-          )}
-
-          {!loading && !error && !sesionActiva && (
-            <div className="text-center py-24 text-gray-400">
-              <p className="text-4xl mb-4">👤</p>
-              <p className="text-sm">
-                No hay cliente activo. Crea una nueva pestaña para comenzar.
-              </p>
-            </div>
           )}
         </main>
 
@@ -308,13 +307,42 @@ function AppHeader({
   totalUnidades,
   cartBumpKey,
   onCarritoClick,
+  onRecargar,
 }: {
   busqueda: string;
   setBusqueda: (v: string) => void;
   totalUnidades: number;
   cartBumpKey: number;
   onCarritoClick: () => void;
+  onRecargar: () => void;
 }) {
+  const [menuAbierto, setMenuAbierto] = useState(false);
+  const [importError, setImportError] = useState('');
+  const fileRef = useRef<HTMLInputElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handler(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuAbierto(false);
+      }
+    }
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  async function handleImportar(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      await importarDatos(file);
+      setMenuAbierto(false);
+      onRecargar();
+    } catch (err) {
+      setImportError(err instanceof Error ? err.message : 'Error al importar.');
+    }
+    e.target.value = '';
+  }
   return (
     <header
       className="sticky top-0 z-30 shadow-lg"
@@ -368,6 +396,45 @@ function AppHeader({
             </span>
           )}
         </button>
+
+        {/* Menú ⚙ */}
+        <div className="relative flex-shrink-0" ref={menuRef}>
+          <button
+            onClick={() => { setMenuAbierto(o => !o); setImportError(''); }}
+            className="w-9 h-9 flex items-center justify-center bg-white/15 hover:bg-white/25 border border-white/20 text-white rounded-lg transition text-base"
+            title="Opciones"
+          >
+            ⚙
+          </button>
+
+          {menuAbierto && (
+            <div className="absolute right-0 top-11 bg-white rounded-xl shadow-2xl border border-gray-100 py-1 w-44 z-50">
+              <button
+                onClick={() => { exportarDatos(); setMenuAbierto(false); }}
+                className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+              >
+                <span>⬇</span> Exportar datos
+              </button>
+              <button
+                onClick={() => fileRef.current?.click()}
+                className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+              >
+                <span>⬆</span> Importar datos
+              </button>
+              {importError && (
+                <p className="px-4 py-2 text-xs text-red-600 border-t border-gray-100">{importError}</p>
+              )}
+            </div>
+          )}
+
+          <input
+            ref={fileRef}
+            type="file"
+            accept=".json"
+            className="hidden"
+            onChange={handleImportar}
+          />
+        </div>
       </div>
 
       <div className="sm:hidden px-4 pb-3 relative">
