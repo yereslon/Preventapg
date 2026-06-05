@@ -84,10 +84,11 @@ const s = StyleSheet.create({
   },
   tableRowAlt: { backgroundColor: GRIS_BG },
   colNum:      { width: 22 },
-  colProducto: { flex: 4 },
-  colCant:     { flex: 1 },
-  colPrecio:   { flex: 2 },
-  colSubtotal: { flex: 2 },
+  colProducto: { flex: 3 },
+  colUnidad:   { flex: 1.5, textAlign: 'center' as const },
+  colCant:     { flex: 1,   textAlign: 'center' as const },
+  colPrecio:   { flex: 2,   textAlign: 'right' as const },
+  colSubtotal: { flex: 2,   textAlign: 'right' as const },
   tdBold: { fontFamily: 'Helvetica-Bold' },
   tdNum:  { color: SUAVE, fontSize: 7 },
 
@@ -166,9 +167,10 @@ export function OrderPDF({ summary }: { summary: OrderSummary }) {
               <View style={s.tableHeader}>
                 <Text style={[s.thText, s.colNum]}>N°</Text>
                 <Text style={[s.thText, s.colProducto]}>Producto</Text>
+                <Text style={[s.thText, s.colUnidad]}>Unidad</Text>
                 <Text style={[s.thText, s.colCant]}>Cant.</Text>
                 <Text style={[s.thText, s.colPrecio]}>P. Unit.</Text>
-                <Text style={[s.thText, s.colSubtotal]}>Subtotal</Text>
+                <Text style={[s.thText, s.colSubtotal]}>Total</Text>
               </View>
             )
           }
@@ -197,9 +199,10 @@ export function OrderPDF({ summary }: { summary: OrderSummary }) {
           <View style={s.tableHeader}>
             <Text style={[s.thText, s.colNum]}>N°</Text>
             <Text style={[s.thText, s.colProducto]}>Producto</Text>
+            <Text style={[s.thText, s.colUnidad]}>Unidad</Text>
             <Text style={[s.thText, s.colCant]}>Cant.</Text>
             <Text style={[s.thText, s.colPrecio]}>P. Unit.</Text>
-            <Text style={[s.thText, s.colSubtotal]}>Subtotal</Text>
+            <Text style={[s.thText, s.colSubtotal]}>Total</Text>
           </View>
 
           {/* Filas */}
@@ -208,17 +211,18 @@ export function OrderPDF({ summary }: { summary: OrderSummary }) {
               <Text style={[s.colNum, s.tdNum]}>{i + 1}</Text>
               <View style={s.colProducto}>
                 <Text style={s.tdBold}>{item.nombre}</Text>
-                <Text style={{ color: SUAVE, fontSize: 7, marginTop: 1 }}>
-                  {item.categoria} · {item.unidad}
-                </Text>
+                {item.categoria ? (
+                  <Text style={{ color: SUAVE, fontSize: 7, marginTop: 1 }}>{item.categoria}</Text>
+                ) : null}
                 {item.nota ? (
                   <Text style={{ color: ROJO, fontSize: 7, marginTop: 2, fontFamily: 'Helvetica-Oblique' }}>
                     {item.nota}
                   </Text>
                 ) : null}
               </View>
+              <Text style={[s.colUnidad, { color: SUAVE }]}>{item.unidad}</Text>
               <Text style={s.colCant}>{item.cantidad}</Text>
-              <Text style={s.colPrecio}>{fmt(item.precio)}</Text>
+              <Text style={[s.colPrecio, { color: SUAVE }]}>{fmt(item.precio)}</Text>
               <Text style={[s.colSubtotal, s.tdBold, { color: ROJO }]}>
                 {fmt(item.precio * item.cantidad)}
               </Text>

@@ -86,17 +86,6 @@ export default function App() {
     cerrarSesion(id);
   }
 
-  // ── ConfirmView overlay ──────────────────────────────
-  const confirmOverlay = ultimoPedido && (
-    <Suspense fallback={null}>
-      <ConfirmView
-        summary={ultimoPedido}
-        whatsapp={whatsapp}
-        onCerrar={() => setUltimoPedido(null)}
-      />
-    </Suspense>
-  );
-
   // ── Modal de cliente ─────────────────────────────────
   const clientModal = modalAbierto && (
     <ClientModal
@@ -107,6 +96,44 @@ export default function App() {
       puedeCancelar={true}
     />
   );
+
+  // ── Vista: confirmado ────────────────────────────────
+  if (ultimoPedido) {
+    return (
+      <>
+        <AppHeader
+          busqueda=""
+          setBusqueda={() => {}}
+          totalUnidades={0}
+          cartBumpKey={0}
+          onCarritoClick={() => {}}
+          onRecargar={() => window.location.reload()}
+        />
+        <TabBar
+          sesiones={sesiones}
+          activoId={activoId}
+          onSeleccionar={setActivo}
+          onCerrar={handleCerrarPestana}
+          onNuevo={() => setModalAbierto(true)}
+        />
+        <Suspense
+          fallback={
+            <div className="flex items-center justify-center h-64 gap-3 text-gray-500">
+              <div className="w-8 h-8 border-4 border-gray-200 border-t-blue-600 rounded-full animate-spin" />
+              <span className="text-sm">Preparando confirmación...</span>
+            </div>
+          }
+        >
+          <ConfirmView
+            summary={ultimoPedido}
+            whatsapp={whatsapp}
+            onCerrar={() => setUltimoPedido(null)}
+          />
+        </Suspense>
+        {clientModal}
+      </>
+    );
+  }
 
   // ── Vista: revisión ──────────────────────────────────
   if (vista === 'revision') {
@@ -142,7 +169,6 @@ export default function App() {
           readOnlyDatos
           formInicial={sesionActiva?.orderForm}
         />
-        {confirmOverlay}
         {clientModal}
       </>
     );
@@ -294,7 +320,6 @@ export default function App() {
         </div>
       )}
 
-      {confirmOverlay}
       {clientModal}
     </div>
   );

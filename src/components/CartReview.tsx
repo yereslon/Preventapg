@@ -410,20 +410,38 @@ export function CartReview({
 
               {/* Resumen de total */}
               <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5 space-y-3">
-                <h2 className="text-base font-bold text-gray-800">Resumen</h2>
+                <h2 className="text-base font-bold text-gray-800">Resumen del pedido</h2>
 
-                <div className="space-y-1.5 text-sm">
-                  {cart.items.map(item => (
-                    <div key={item.id} className="flex justify-between text-gray-600">
-                      <span className="truncate max-w-[60%]">
-                        {item.nombre}{' '}
-                        <span className="text-gray-400">×{item.cantidad}</span>
-                      </span>
-                      <span className="font-medium">
-                        {formatSoles(item.precio * item.cantidad)}
-                      </span>
-                    </div>
-                  ))}
+                <div className="overflow-x-auto -mx-1">
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr className="border-b border-gray-100 text-gray-400 uppercase tracking-wide">
+                        <th className="text-center pb-2 pr-2 font-semibold w-6">#</th>
+                        <th className="text-left pb-2 pr-2 font-semibold">Producto</th>
+                        <th className="text-center pb-2 pr-2 font-semibold">Unidad</th>
+                        <th className="text-center pb-2 pr-2 font-semibold">Cant.</th>
+                        <th className="text-right pb-2 pr-2 font-semibold">P. Unit.</th>
+                        <th className="text-right pb-2 font-semibold">Total</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {cart.items.map((item, idx) => (
+                        <tr key={item.cartKey} className="border-b border-gray-50 last:border-0">
+                          <td className="py-1.5 pr-2 text-center text-gray-400">{idx + 1}</td>
+                          <td className="py-1.5 pr-2 text-gray-800 font-medium leading-tight">
+                            {item.nombre}
+                            {item.nota && (
+                              <span className="block text-[10px] text-amber-600 font-normal">{item.nota}</span>
+                            )}
+                          </td>
+                          <td className="py-1.5 pr-2 text-center text-gray-500">{item.unidad}</td>
+                          <td className="py-1.5 pr-2 text-center text-gray-700 font-semibold">{item.cantidad}</td>
+                          <td className="py-1.5 pr-2 text-right text-gray-600">{formatSoles(item.precio)}</td>
+                          <td className="py-1.5 text-right font-bold text-gray-800">{formatSoles(item.precio * item.cantidad)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
 
                 <div className="border-t border-gray-100 pt-3 flex justify-between items-center">
