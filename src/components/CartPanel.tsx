@@ -38,7 +38,7 @@ export function CartPanel({
           Pedido
           {!vacio && (
             <span className="ml-2 bg-red-600 text-white text-xs font-bold px-2 py-0.5 rounded-full">
-              {parseFloat(cart.totalUnidades.toFixed(3))}
+              {cart.items.length}
             </span>
           )}
         </h2>
