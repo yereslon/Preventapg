@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect, useRef, lazy, Suspense } from 'react';
 import { exportarDatos, importarDatos } from './utils/backup';
+import { useInstallPrompt } from './hooks/useInstallPrompt';
 import { useExcelData } from './hooks/useExcelData';
 import { useClients } from './hooks/useClients';
 import { useClientRegistry } from './hooks/useClientRegistry';
@@ -348,6 +349,7 @@ function AppHeader({
   const [importError, setImportError] = useState('');
   const fileRef = useRef<HTMLInputElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  const { puedeInstalar, instalar } = useInstallPrompt();
 
   useEffect(() => {
     function handler(e: MouseEvent) {
@@ -436,7 +438,18 @@ function AppHeader({
           </button>
 
           {menuAbierto && (
-            <div className="absolute right-0 top-11 bg-white rounded-xl shadow-2xl border border-gray-100 py-1 w-44 z-50">
+            <div className="absolute right-0 top-11 bg-white rounded-xl shadow-2xl border border-gray-100 py-1 w-48 z-50">
+              {puedeInstalar && (
+                <>
+                  <button
+                    onClick={() => { instalar(); setMenuAbierto(false); }}
+                    className="w-full text-left px-4 py-2.5 text-sm font-semibold text-[#1a3a6b] hover:bg-blue-50 flex items-center gap-2"
+                  >
+                    <span>📲</span> Instalar como app
+                  </button>
+                  <div className="border-t border-gray-100 my-1" />
+                </>
+              )}
               <button
                 onClick={() => { exportarDatos(); setMenuAbierto(false); }}
                 className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
