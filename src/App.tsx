@@ -127,7 +127,10 @@ export default function App() {
           <ConfirmView
             summary={ultimoPedido}
             whatsapp={whatsapp}
-            onCerrar={() => setUltimoPedido(null)}
+            onCerrar={() => {
+              setUltimoPedido(null);
+              setModalAbierto(true);
+            }}
           />
         </Suspense>
         {clientModal}

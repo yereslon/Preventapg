@@ -158,7 +158,6 @@ export function useClients() {
     const next = sesiones.filter(s => s.id !== activoId);
     setSesiones(next);
     setActivoId(next[0]?.id ?? null);
-    if (next.length === 0) setModalAbierto(true);
 
     return summary;
   }
