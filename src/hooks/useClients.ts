@@ -135,6 +135,23 @@ export function useClients() {
     setModalAbierto(false);
   }
 
+  function crearSesionConItems(nombre: string, ubicacion: string, items: CartItem[]) {
+    const id = genId();
+    const hist = cargarHistorial(nombre);
+    const sesion: ClientSession = {
+      id, nombre, ubicacion, esNuevo: false,
+      items: items.map((i, idx) => ({ ...i, cartKey: `${i.id}_${idx}` })),
+      vista: 'catalogo',
+      orderForm: { nombre, ubicacion, notas: '' },
+      preciosNegociados: hist.preciosNegociados,
+      ultimosProductos: hist.ultimosProductos,
+    };
+    const next = [...sesiones, sesion];
+    setSesiones(next);
+    setActivoId(id);
+    setModalAbierto(false);
+  }
+
   function cerrarSesion(id: string) {
     const next = sesiones.filter(s => s.id !== id);
     setSesiones(next);
@@ -295,6 +312,7 @@ export function useClients() {
     setModalAbierto,
     cart,
     crearSesion,
+    crearSesionConItems,
     cerrarSesion,
     setActivo,
     confirmarSesion,

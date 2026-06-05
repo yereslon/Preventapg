@@ -226,3 +226,27 @@ describe('useClients — confirmarSesion', () => {
     expect(hist.pedidos[0].items).toHaveLength(1);
   });
 });
+
+describe('useClients — crearSesionConItems', () => {
+  it('crea una sesión con items pre-cargados', () => {
+    const { result } = renderHook(() => useClients());
+    const items = [{ ...PRODUCTO, cartKey: '123_0', cantidad: 4 }];
+    act(() => { result.current.crearSesionConItems('Pedro Lima', 'Callao', items); });
+    expect(result.current.sesionActiva?.nombre).toBe('Pedro Lima');
+    expect(result.current.sesionActiva?.items).toHaveLength(1);
+    expect(result.current.sesionActiva?.items[0].cantidad).toBe(4);
+    expect(result.current.modalAbierto).toBe(false);
+  });
+
+  it('carga historial de precios del cliente al crear sesión con items', () => {
+    localStorage.setItem('pg_hist_pedro_lima', JSON.stringify({
+      ultimosProductos: [],
+      preciosNegociados: { 'Bolsa Negra 5kg_paq': 9.00 },
+      pedidos: [],
+    }));
+    const { result } = renderHook(() => useClients());
+    const items = [{ ...PRODUCTO, cartKey: '123_0', cantidad: 2 }];
+    act(() => { result.current.crearSesionConItems('Pedro Lima', 'Callao', items); });
+    expect(result.current.sesionActiva?.preciosNegociados['Bolsa Negra 5kg_paq']).toBe(9.00);
+  });
+});
