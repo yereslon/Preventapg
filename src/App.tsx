@@ -342,7 +342,7 @@ export default function App() {
         </main>
 
         {/* Panel carrito desktop */}
-        <aside className="hidden lg:flex flex-col w-80 flex-shrink-0 bg-white rounded-xl border border-gray-200 shadow-sm p-5 h-[calc(100vh-8rem)] sticky top-20">
+        <aside className="hidden lg:flex flex-col w-80 shrink-0 bg-white rounded-xl border border-gray-200 shadow-sm p-5 h-[calc(100vh-8rem)] sticky top-20">
           <CartPanel
             cart={cart}
             onSumarUno={sumarUno}
@@ -449,7 +449,7 @@ function AppHeader({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
         <div className="flex items-center gap-3 min-w-0">
           <span
-            className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-black text-sm flex-shrink-0"
+            className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-black text-sm shrink-0"
             style={{ background: '#c0392b' }}
           >
             PG
@@ -484,7 +484,7 @@ function AppHeader({
 
         <button
           onClick={onCarritoClick}
-          className="relative flex items-center gap-2 bg-white/15 hover:bg-white/25 border border-white/20 text-white px-3 py-2 rounded-lg transition text-sm font-semibold flex-shrink-0"
+          className="relative flex items-center gap-2 bg-white/15 hover:bg-white/25 border border-white/20 text-white px-3 py-2 rounded-lg transition text-sm font-semibold shrink-0"
         >
           <span key={cartBumpKey} className={cartBumpKey > 0 ? 'cart-bump' : ''}>🛒</span>
           <span className="hidden sm:inline">Pedido</span>
@@ -496,10 +496,10 @@ function AppHeader({
         </button>
 
         {/* Menú ⚙ */}
-        <div className="relative flex-shrink-0" ref={menuRef}>
+        <div className="relative shrink-0" ref={menuRef}>
           <button
             onClick={() => { setMenuAbierto(o => !o); setImportError(''); }}
-            className="flex items-center gap-1.5 bg-white/15 hover:bg-white/25 border border-white/20 text-white px-2.5 py-2 rounded-lg transition flex-shrink-0"
+            className="flex items-center gap-1.5 bg-white/15 hover:bg-white/25 border border-white/20 text-white px-2.5 py-2 rounded-lg transition shrink-0"
             aria-label="Opciones"
           >
             <span className="text-base leading-none">⚙</span>
