@@ -294,8 +294,30 @@ export default function App() {
               </p>
 
               {productosFiltrados.length === 0 ? (
-                <div className="text-center py-20 text-gray-400 text-sm">
-                  No se encontraron productos.
+                <div className="text-center py-20 text-gray-400 text-sm space-y-3">
+                  <p className="text-3xl">🔍</p>
+                  <p className="font-medium text-gray-500">
+                    No se encontraron productos
+                    {busquedaFiltro ? ` para "${busquedaFiltro}"` : ''}
+                  </p>
+                  <div className="flex flex-col items-center gap-2 pt-1">
+                    {busquedaFiltro && (
+                      <button
+                        onClick={() => setBusqueda('')}
+                        className="text-[#2554a0] hover:underline text-sm font-semibold"
+                      >
+                        Limpiar búsqueda
+                      </button>
+                    )}
+                    {categoriaActiva !== 'Todas' && (
+                      <button
+                        onClick={() => setCategoriaActiva('Todas')}
+                        className="text-[#2554a0] hover:underline text-sm font-semibold"
+                      >
+                        Ver todas las categorías
+                      </button>
+                    )}
+                  </div>
                 </div>
               ) : (
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -476,10 +498,11 @@ function AppHeader({
         <div className="relative flex-shrink-0" ref={menuRef}>
           <button
             onClick={() => { setMenuAbierto(o => !o); setImportError(''); }}
-            className="w-9 h-9 flex items-center justify-center bg-white/15 hover:bg-white/25 border border-white/20 text-white rounded-lg transition text-base"
-            title="Opciones"
+            className="flex items-center gap-1.5 bg-white/15 hover:bg-white/25 border border-white/20 text-white px-2.5 py-2 rounded-lg transition flex-shrink-0"
+            aria-label="Opciones"
           >
-            ⚙
+            <span className="text-base leading-none">⚙</span>
+            <span className="hidden sm:inline text-xs font-semibold">Opciones</span>
           </button>
 
           {menuAbierto && (

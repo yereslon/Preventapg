@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import type { CatalogItem } from '../types/catalog';
 import type { CartItem } from '../types/cart';
 import { formatSoles } from '../utils/format';
+import { QuantityInput } from './QuantityInput';
 
 interface Props {
   item: CatalogItem;
@@ -118,7 +119,6 @@ function ProductModal({ item, color, precioNegociado, onClose, onAgregar }: Moda
 
   const [selectedIdx, setSelectedIdx] = useState(0);
   const [cantidad, setCantidad] = useState(1);
-  const [cantidadRaw, setCantidadRaw] = useState('1');
   const [precioInput, setPrecioInput] = useState('');
   const [nota, setNota] = useState('');
   const [agregado, setAgregado] = useState(false);
@@ -132,23 +132,7 @@ function ProductModal({ item, color, precioNegociado, onClose, onAgregar }: Moda
     setPrecioInput(negociado > 0 ? String(negociado) : '');
   }, [selectedIdx, selectedOpcion.precio, precioNegociado]);
 
-  function handleUnitChange(idx: number) {
-    setSelectedIdx(idx);
-  }
-
-  function stepCantidad(delta: number) {
-    const next = Math.max(1, cantidad + delta);
-    setCantidad(next);
-    setCantidadRaw(String(next));
-  }
-
-  function handleCantidadChange(v: string) {
-    const clean = v.replace(/[^0-9.]/g, '');
-    setCantidadRaw(clean);
-    const num = parseFloat(clean);
-    if (!isNaN(num) && num > 0) setCantidad(num);
-  }
-
+  // Snaps typed decimals to nearest valid value: x.0, x.25, or x.5
   function snapCantidad(num: number): number {
     const floor = Math.floor(num);
     const frac = num - floor;
@@ -158,18 +142,6 @@ function ProductModal({ item, color, precioNegociado, onClose, onAgregar }: Moda
     else if (frac < 0.625) snapped = floor + 0.5;
     else snapped = floor + 1;
     return Math.max(0.25, snapped);
-  }
-
-  function handleCantidadBlur() {
-    const num = parseFloat(cantidadRaw);
-    if (isNaN(num) || num < 0.25) {
-      setCantidad(0.25);
-      setCantidadRaw('0.25');
-    } else {
-      const snapped = snapCantidad(num);
-      setCantidad(snapped);
-      setCantidadRaw(String(parseFloat(snapped.toFixed(3))));
-    }
   }
 
   function handleAgregar() {
@@ -247,29 +219,16 @@ function ProductModal({ item, color, precioNegociado, onClose, onAgregar }: Moda
             <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
               Cantidad
             </label>
-            <div className="flex items-center justify-center gap-3">
-              <button
-                onClick={() => stepCantidad(-1)}
-                className="w-10 h-10 rounded-xl border border-gray-200 bg-gray-50 hover:bg-gray-100 flex items-center justify-center text-gray-600 font-bold text-lg transition-colors flex-shrink-0"
-              >
-                −
-              </button>
-              <input
-                type="number"
-                min="0.25"
-                step="any"
-                value={cantidadRaw}
-                onChange={e => handleCantidadChange(e.target.value)}
-                onFocus={e => e.target.select()}
-                onBlur={handleCantidadBlur}
-                className="w-24 text-center text-xl font-black text-gray-800 border border-gray-200 rounded-xl py-2 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#1a3a6b]/20 focus:border-[#1a3a6b] transition"
+            <div className="flex justify-center">
+              <QuantityInput
+                size="lg"
+                value={cantidad}
+                onIncrement={() => setCantidad(c => Math.max(1, c + 1))}
+                onDecrement={() => setCantidad(c => Math.max(0.25, c - 1))}
+                onChange={setCantidad}
+                snapFn={snapCantidad}
+                min={0.25}
               />
-              <button
-                onClick={() => stepCantidad(1)}
-                className="w-10 h-10 rounded-xl border border-gray-200 bg-gray-50 hover:bg-gray-100 flex items-center justify-center text-gray-600 font-bold text-lg transition-colors flex-shrink-0"
-              >
-                +
-              </button>
             </div>
           </div>
 
