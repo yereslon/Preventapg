@@ -237,6 +237,7 @@ export default function App() {
         onSeleccionar={setActivo}
         onCerrar={handleCerrarPestana}
         onNuevo={() => setModalAbierto(true)}
+        onHistorial={() => setHistorialAbierto(true)}
       />
 
       <div className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 py-6 flex gap-6">
