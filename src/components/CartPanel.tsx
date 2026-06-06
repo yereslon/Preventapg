@@ -1,7 +1,9 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import type { CartState } from '../types/cart';
 import { formatSoles } from '../utils/format';
 import { QuantityInput } from './QuantityInput';
+
+type PendingDelete = { cartKey: string; nombre: string };
 
 interface Props {
   cart: CartState;
@@ -22,13 +24,43 @@ export function CartPanel({
   onVaciar,
   onVerPedido,
 }: Props) {
-  const vacio = cart.items.length === 0;
   const [confirmando, setConfirmando] = useState(false);
+  const [pendingDelete, setPendingDelete] = useState<PendingDelete | null>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => () => { if (timerRef.current) clearTimeout(timerRef.current); }, []);
+
+  function handleEliminar(cartKey: string, nombre: string) {
+    // Commit any in-flight deletion before starting a new one
+    if (pendingDelete) {
+      if (timerRef.current) clearTimeout(timerRef.current);
+      onEliminar(pendingDelete.cartKey);
+    }
+    timerRef.current = setTimeout(() => {
+      onEliminar(cartKey);
+      setPendingDelete(null);
+    }, 5000);
+    setPendingDelete({ cartKey, nombre });
+  }
+
+  function handleDeshacer() {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = null;
+    setPendingDelete(null);
+  }
 
   function handleVaciar() {
+    if (pendingDelete) {
+      if (timerRef.current) clearTimeout(timerRef.current);
+      onEliminar(pendingDelete.cartKey);
+      setPendingDelete(null);
+    }
     onVaciar();
     setConfirmando(false);
   }
+
+  const itemsVisibles = cart.items.filter(i => i.cartKey !== pendingDelete?.cartKey);
+  const vacio = itemsVisibles.length === 0 && !pendingDelete;
 
   return (
     <aside className="flex flex-col h-full">
@@ -74,6 +106,22 @@ export function CartPanel({
       )}
 
 
+      {/* Toast undo */}
+      {pendingDelete && (
+        <div className="flex items-center justify-between gap-2 bg-gray-800 text-white text-xs rounded-lg px-3 py-2 mb-2 flex-shrink-0">
+          <p className="truncate min-w-0">
+            <span className="text-gray-400">Eliminado: </span>
+            <span className="font-semibold">{pendingDelete.nombre}</span>
+          </p>
+          <button
+            onClick={handleDeshacer}
+            className="flex-shrink-0 font-bold text-amber-300 hover:text-amber-100 transition-colors whitespace-nowrap"
+          >
+            Deshacer
+          </button>
+        </div>
+      )}
+
       {/* Lista */}
       <div className="flex-1 overflow-y-auto space-y-2 pr-1">
         {vacio ? (
@@ -82,7 +130,7 @@ export function CartPanel({
             <p>El pedido está vacío</p>
           </div>
         ) : (
-          cart.items.map(item => (
+          itemsVisibles.map(item => (
             <div key={item.cartKey} className="bg-gray-50 border border-gray-200 rounded-lg p-3">
               <div className="flex justify-between items-start gap-2">
                 <div className="flex-1 min-w-0">
@@ -96,8 +144,8 @@ export function CartPanel({
                   )}
                 </div>
                 <button
-                  onClick={() => onEliminar(item.cartKey)}
-                  className="text-gray-300 hover:text-red-500 transition-colors text-sm leading-none flex-shrink-0"
+                  onClick={() => handleEliminar(item.cartKey, item.nombre)}
+                  className="flex-shrink-0 -mt-1 -mr-1 w-11 h-11 flex items-center justify-center rounded-full text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors"
                   title="Eliminar"
                 >
                   ✕
