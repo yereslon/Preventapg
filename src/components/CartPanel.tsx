@@ -88,7 +88,7 @@ export function CartPanel({
       {confirmando && (
         <div className="mb-3 flex items-center justify-between gap-2 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
           <p className="text-xs text-red-700 font-medium">¿Vaciar todo el pedido?</p>
-          <div className="flex gap-1.5 flex-shrink-0">
+          <div className="flex gap-1.5 shrink-0">
             <button
               onClick={handleVaciar}
               className="px-2.5 py-1 rounded-md bg-red-600 hover:bg-red-700 text-white text-xs font-bold transition-colors"
@@ -108,14 +108,14 @@ export function CartPanel({
 
       {/* Toast undo */}
       {pendingDelete && (
-        <div className="flex items-center justify-between gap-2 bg-gray-800 text-white text-xs rounded-lg px-3 py-2 mb-2 flex-shrink-0">
+        <div className="flex items-center justify-between gap-2 bg-gray-800 text-white text-xs rounded-lg px-3 py-2 mb-2 shrink-0">
           <p className="truncate min-w-0">
             <span className="text-gray-400">Eliminado: </span>
             <span className="font-semibold">{pendingDelete.nombre}</span>
           </p>
           <button
             onClick={handleDeshacer}
-            className="flex-shrink-0 font-bold text-amber-300 hover:text-amber-100 transition-colors whitespace-nowrap"
+            className="shrink-0 font-bold text-amber-300 hover:text-amber-100 transition-colors whitespace-nowrap"
           >
             Deshacer
           </button>
@@ -145,7 +145,7 @@ export function CartPanel({
                 </div>
                 <button
                   onClick={() => handleEliminar(item.cartKey, item.nombre)}
-                  className="flex-shrink-0 -mt-1 -mr-1 w-11 h-11 flex items-center justify-center rounded-full text-gray-400 hover:text-red-600 transition-colors"
+                  className="shrink-0 -mt-1 -mr-1 w-11 h-11 flex items-center justify-center rounded-full text-gray-400 hover:text-red-600 transition-colors"
                   title="Eliminar"
                 >
                   ✕
@@ -160,7 +160,7 @@ export function CartPanel({
                   onDecrement={() => onQuitarUno(item.cartKey)}
                   onChange={v => onCambiarCantidad(item.cartKey, v)}
                 />
-                <span className="text-xs font-bold text-red-700 flex-shrink-0">
+                <span className="text-xs font-bold text-red-700 shrink-0">
                   {formatSoles(item.precio * item.cantidad)}
                 </span>
               </div>

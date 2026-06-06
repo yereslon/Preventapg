@@ -179,7 +179,7 @@ function ProductModal({ item, color, precioNegociado, onClose, onAgregar }: Moda
             </div>
             <button
               onClick={onClose}
-              className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors text-lg leading-none"
+              className="shrink-0 w-8 h-8 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors text-lg leading-none"
             >
               ✕
             </button>
@@ -197,7 +197,7 @@ function ProductModal({ item, color, precioNegociado, onClose, onAgregar }: Moda
               <div className="relative">
                 <select
                   value={selectedIdx}
-                  onChange={e => handleUnitChange(Number(e.target.value))}
+                  onChange={e => setSelectedIdx(Number(e.target.value))}
                   className="w-full appearance-none text-sm font-medium border border-gray-200 rounded-xl px-3 py-2.5 pr-8 text-gray-700 bg-gray-50 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-[#1a3a6b]/20 focus:border-[#1a3a6b] transition cursor-pointer"
                 >
                   {allOpciones.map((op, i) => (

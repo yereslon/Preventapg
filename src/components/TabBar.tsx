@@ -28,16 +28,16 @@ export function TabBar({ sesiones, activoId, onSeleccionar, onCerrar, onNuevo, o
               onClick={() => onSeleccionar(s.id)}
               className={`
                 flex items-center gap-2 px-3 py-2 rounded-t-lg text-xs font-semibold
-                whitespace-nowrap flex-shrink-0 max-w-[160px] transition-colors
+                whitespace-nowrap shrink-0 max-w-40 transition-colors
                 ${activa
                   ? 'bg-white text-[#1a3a6b]'
                   : 'bg-[#243f5e] text-[#8ab0cc] hover:bg-[#2d5070]'}
               `}
             >
-              <span className="truncate max-w-[80px]">{s.nombre}</span>
+              <span className="truncate max-w-20">{s.nombre}</span>
               <span
                 className={`
-                  rounded-full px-1.5 py-0.5 text-[10px] font-bold flex-shrink-0
+                  rounded-full px-1.5 py-0.5 text-[10px] font-bold shrink-0
                   ${activa ? 'bg-blue-100 text-blue-700' : 'bg-white/10 text-[#8ab0cc]'}
                 `}
               >
@@ -49,7 +49,7 @@ export function TabBar({ sesiones, activoId, onSeleccionar, onCerrar, onNuevo, o
                 onClick={e => { e.stopPropagation(); onCerrar(s.id); }}
                 className={`
                   ml-0.5 w-4 h-4 flex items-center justify-center rounded-full text-[11px]
-                  flex-shrink-0 leading-none transition-colors
+                  shrink-0 leading-none transition-colors
                   ${activa ? 'text-gray-400 hover:text-gray-700 hover:bg-gray-100' : 'text-[#4a6a88] hover:text-[#8ab0cc]'}
                 `}
               >
@@ -61,16 +61,16 @@ export function TabBar({ sesiones, activoId, onSeleccionar, onCerrar, onNuevo, o
 
         <button
           onClick={onNuevo}
-          className="px-3 py-2 rounded-t-lg text-xs font-semibold text-[#6ab0aa] hover:text-white bg-white/5 hover:bg-white/10 flex-shrink-0 whitespace-nowrap transition-colors"
+          className="px-3 py-2 rounded-t-lg text-xs font-semibold text-[#6ab0aa] hover:text-white bg-white/5 hover:bg-white/10 shrink-0 whitespace-nowrap transition-colors"
         >
           ＋ Nuevo
         </button>
 
-        <div className="flex-shrink-0 min-w-2" />
+        <div className="shrink-0 min-w-2" />
       </div>
 
       {/* Zona fija: acceso directo a historial */}
-      <div className="flex items-center flex-shrink-0 px-2 pb-1 border-l border-white/10">
+      <div className="flex items-center shrink-0 px-2 pb-1 border-l border-white/10">
         <button
           onClick={onHistorial}
           title="Historial de pedidos"

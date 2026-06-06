@@ -209,7 +209,7 @@ export function CartReview({
                       </div>
                       <button
                         onClick={() => onEliminar(item.cartKey)}
-                        className="mt-0.5 flex-shrink-0 w-6 h-6 flex items-center justify-center rounded-full text-gray-500 hover:text-red-600 transition-colors text-xs"
+                        className="mt-0.5 shrink-0 w-6 h-6 flex items-center justify-center rounded-full text-gray-500 hover:text-red-600 transition-colors text-xs"
                         title="Eliminar"
                       >
                         ✕
@@ -276,7 +276,7 @@ export function CartReview({
                       />
 
                       {/* Subtotal */}
-                      <p className="text-sm font-extrabold text-[#c0392b] w-20 text-right flex-shrink-0">
+                      <p className="text-sm font-extrabold text-[#c0392b] w-20 text-right shrink-0">
                         {formatSoles(item.precio * item.cantidad)}
                       </p>
                     </div>
