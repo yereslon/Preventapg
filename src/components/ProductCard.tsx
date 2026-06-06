@@ -44,18 +44,15 @@ export function ProductCard({ item, precioNegociado, cartItems = [], onAgregar }
 
   return (
     <>
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 flex flex-col overflow-hidden">
-        <div className="flex flex-col flex-1 p-4 gap-2">
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-200 flex flex-col overflow-hidden">
+        <div className="flex flex-col flex-1 p-4 gap-2.5">
           {/* Categoría */}
-          <div className="flex items-center gap-1.5">
-            <span className={`inline-block w-1.5 h-1.5 rounded-full flex-shrink-0 ${color.dot}`} />
-            <span className={`text-[10px] font-semibold uppercase tracking-wider truncate ${color.text}`}>
-              {item.categoria}
-            </span>
-          </div>
+          <span className={`self-start text-[10px] font-bold uppercase tracking-wide rounded-full px-2 py-0.5 truncate max-w-full ${color.bg} ${color.text}`}>
+            {item.categoria}
+          </span>
 
           {/* Nombre */}
-          <h3 className="text-sm font-bold text-gray-800 leading-snug line-clamp-3 flex-1 min-h-[3rem]">
+          <h3 className="text-sm font-extrabold text-gray-900 leading-snug line-clamp-3 flex-1">
             {item.nombre}
           </h3>
         </div>
@@ -63,7 +60,7 @@ export function ProductCard({ item, precioNegociado, cartItems = [], onAgregar }
         {/* Precio negociado */}
         {precioNegociado !== undefined && (
           <div className="px-4 pb-2 -mt-1">
-            <p className="text-sm font-black text-red-600">
+            <p className="text-base font-black text-red-600">
               {formatSoles(precioNegociado)}
               <span className="text-xs text-gray-400 line-through ml-1.5 font-normal">
                 {formatSoles(item.precio)}
@@ -77,7 +74,7 @@ export function ProductCard({ item, precioNegociado, cartItems = [], onAgregar }
           <div className="relative">
             <button
               onClick={() => setModalOpen(true)}
-              className="w-full py-2.5 rounded-xl bg-[#1a3a6b] hover:bg-[#2554a0] text-white text-sm font-bold tracking-wide transition-colors duration-200"
+              className="w-full py-2.5 rounded-xl bg-[#1a3a6b] hover:bg-[#2554a0] active:scale-[0.97] text-white text-sm font-bold tracking-wide transition-all duration-150"
             >
               Agregar
             </button>
@@ -199,9 +196,8 @@ function ProductModal({ item, color, precioNegociado, onClose, onAgregar }: Moda
         <div className="px-5 pt-5 pb-4 border-b border-gray-100">
           <div className="flex items-start justify-between gap-3">
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-1.5 mb-1.5">
-                <span className={`inline-block w-2 h-2 rounded-full flex-shrink-0 ${color.dot}`} />
-                <span className={`text-[10px] font-semibold uppercase tracking-wider ${color.text}`}>
+              <div className="mb-1.5">
+                <span className={`inline-block text-[10px] font-bold uppercase tracking-wide rounded-full px-2 py-0.5 ${color.bg} ${color.text}`}>
                   {item.categoria}
                 </span>
               </div>
