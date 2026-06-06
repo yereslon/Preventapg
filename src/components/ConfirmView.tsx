@@ -153,7 +153,7 @@ export function ConfirmView({ summary, whatsapp, onCerrar }: Props) {
             <PDFDownloadLink
               document={<OrderPDF summary={summary} />}
               fileName={nombreArchivoPDF(summary)}
-              className="flex flex-col items-center justify-center gap-1 bg-white border border-gray-200 hover:border-[#1a3a6b] hover:bg-blue-50 rounded-xl p-3 transition-all text-xs font-semibold text-gray-600 hover:text-[#1a3a6b] shadow-sm"
+              className="flex flex-col items-center justify-center gap-1 bg-white border border-gray-200 hover:border-[#1a3a6b] hover:bg-[#1a3a6b]/8 rounded-xl p-3 transition-all text-xs font-semibold text-slate-600 hover:text-[#1a3a6b] shadow-sm"
             >
               {({ loading }) => (
                 <>
@@ -167,7 +167,7 @@ export function ConfirmView({ summary, whatsapp, onCerrar }: Props) {
               href={waUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex flex-col items-center justify-center gap-1 bg-white border border-gray-200 hover:border-[#25D366] hover:bg-green-50 rounded-xl p-3 transition-all text-xs font-semibold text-gray-600 hover:text-[#1a9e50] shadow-sm"
+              className="flex flex-col items-center justify-center gap-1 bg-white border border-gray-200 hover:border-[#25D366] hover:bg-[#25D366]/8 rounded-xl p-3 transition-all text-xs font-semibold text-slate-600 hover:text-[#1a9e50] shadow-sm"
             >
               <span className="text-xl">💬</span>
               <span>Solo texto</span>

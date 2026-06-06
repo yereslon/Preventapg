@@ -209,7 +209,7 @@ export function CartReview({
                       </div>
                       <button
                         onClick={() => onEliminar(item.cartKey)}
-                        className="mt-0.5 flex-shrink-0 w-6 h-6 flex items-center justify-center rounded-full text-gray-400 hover:bg-red-50 hover:text-red-500 transition-colors text-xs"
+                        className="mt-0.5 flex-shrink-0 w-6 h-6 flex items-center justify-center rounded-full text-gray-500 hover:text-red-600 transition-colors text-xs"
                         title="Eliminar"
                       >
                         ✕
