@@ -145,7 +145,7 @@ export function CartPanel({
                 </div>
                 <button
                   onClick={() => handleEliminar(item.cartKey, item.nombre)}
-                  className="flex-shrink-0 -mt-1 -mr-1 w-11 h-11 flex items-center justify-center rounded-full text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors"
+                  className="flex-shrink-0 -mt-1 -mr-1 w-11 h-11 flex items-center justify-center rounded-full text-gray-400 hover:text-red-600 transition-colors"
                   title="Eliminar"
                 >
                   ✕
