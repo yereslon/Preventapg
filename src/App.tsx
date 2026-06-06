@@ -298,11 +298,13 @@ export default function App() {
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                   {productosFiltrados.map(item => {
                     const negociado = getPrecioNegociado(item.nombre, item.unidad);
+                    const itemsEnCarrito = cart.items.filter(ci => ci.nombre === item.nombre);
                     return (
                       <ProductCard
                         key={item.id}
                         item={item}
                         precioNegociado={negociado}
+                        cartItems={sesionActiva ? itemsEnCarrito : []}
                         onAgregar={!sesionActiva ? () => setModalAbierto(true) : handleAgregar}
                       />
                     );

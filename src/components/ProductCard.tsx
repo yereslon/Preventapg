@@ -1,11 +1,20 @@
 import { useState, useEffect } from 'react';
 import type { CatalogItem } from '../types/catalog';
+import type { CartItem } from '../types/cart';
 import { formatSoles } from '../utils/format';
 
 interface Props {
   item: CatalogItem;
   precioNegociado?: number;
+  cartItems?: CartItem[];
   onAgregar: (item: CatalogItem, cantidad: number, precioOverride?: number, unidadOverride?: string, opcionIdx?: number, nota?: string) => void;
+}
+
+function badgeTexto(items: CartItem[]): string {
+  if (items.length === 0) return '';
+  if (items.length === 1) return `${items[0].cantidad} ${items[0].unidad}`;
+  if (items.length >= 3) return `${items.length} líneas`;
+  return items.map(i => `${i.cantidad}${i.unidad}`).join(' · ');
 }
 
 const CATEGORIA_COLORS: Record<string, { bg: string; text: string; dot: string }> = {};
@@ -28,9 +37,10 @@ function getCategoriaColor(categoria: string) {
 }
 
 /* ── Tarjeta simplificada ─────────────────────────────── */
-export function ProductCard({ item, precioNegociado, onAgregar }: Props) {
+export function ProductCard({ item, precioNegociado, cartItems = [], onAgregar }: Props) {
   const [modalOpen, setModalOpen] = useState(false);
   const color = getCategoriaColor(item.categoria);
+  const badge = badgeTexto(cartItems);
 
   return (
     <>
@@ -64,12 +74,19 @@ export function ProductCard({ item, precioNegociado, onAgregar }: Props) {
 
         {/* Botón agregar */}
         <div className="px-3 pb-3">
-          <button
-            onClick={() => setModalOpen(true)}
-            className="w-full py-2.5 rounded-xl bg-[#1a3a6b] hover:bg-[#2554a0] text-white text-sm font-bold tracking-wide transition-colors duration-200"
-          >
-            Agregar
-          </button>
+          <div className="relative">
+            <button
+              onClick={() => setModalOpen(true)}
+              className="w-full py-2.5 rounded-xl bg-[#1a3a6b] hover:bg-[#2554a0] text-white text-sm font-bold tracking-wide transition-colors duration-200"
+            >
+              Agregar
+            </button>
+            {badge && (
+              <span className="absolute -top-2.5 -right-1.5 bg-red-600 text-white text-[10px] font-black rounded-full px-1.5 py-0.5 leading-none whitespace-nowrap pointer-events-none shadow-sm">
+                {badge}
+              </span>
+            )}
+          </div>
         </div>
       </div>
 
