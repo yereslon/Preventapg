@@ -119,6 +119,7 @@ export default function App() {
           onSeleccionar={setActivo}
           onCerrar={handleCerrarPestana}
           onNuevo={() => setModalAbierto(true)}
+          onHistorial={() => setHistorialAbierto(true)}
         />
         <HistorialView
           onCerrar={() => setHistorialAbierto(false)}
@@ -152,6 +153,7 @@ export default function App() {
           onSeleccionar={setActivo}
           onCerrar={handleCerrarPestana}
           onNuevo={() => setModalAbierto(true)}
+          onHistorial={() => setHistorialAbierto(true)}
         />
         <Suspense
           fallback={
@@ -194,6 +196,7 @@ export default function App() {
           onSeleccionar={setActivo}
           onCerrar={handleCerrarPestana}
           onNuevo={() => setModalAbierto(true)}
+          onHistorial={() => setHistorialAbierto(true)}
         />
         <CartReview
           cart={cart}
