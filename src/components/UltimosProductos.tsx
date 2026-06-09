@@ -17,13 +17,13 @@ export function UltimosProductos({ productos, catalogData, onAgregar, clienteNom
   }
 
   return (
-    <div className="border-b-2 border-amber-200" style={{ background: '#fffbeb' }}>
+    <div className="border-b-2 border-amber-200 bg-amber-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3">
         <p className="text-xs font-bold text-amber-700 mb-2 flex items-center gap-1.5">
           <span>⏱</span>
           Últimos productos de {clienteNombre}
         </p>
-        <div className="flex gap-3 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
+        <div className="flex gap-3 overflow-x-auto pb-1 [scrollbar-width:none]">
           {productos.map((p, i) => {
             const catalogItem = findCatalogItem(p.nombre);
             const disponible = Boolean(catalogItem);

@@ -457,10 +457,7 @@ export function CartReview({
 
                 <button
                   onClick={handleConfirmar}
-                  className="w-full py-3 rounded-xl text-sm font-bold text-white transition-colors"
-                  style={{ background: '#c0392b' }}
-                  onMouseEnter={e => (e.currentTarget.style.background = '#96281b')}
-                  onMouseLeave={e => (e.currentTarget.style.background = '#c0392b')}
+                  className="w-full py-3 rounded-xl text-sm font-bold text-white transition-colors bg-[#c0392b] hover:bg-[#96281b]"
                 >
                   Confirmar pedido →
                 </button>

@@ -80,8 +80,7 @@ export function ClientModal({
         >
           {/* Header */}
           <div
-            className="flex items-center justify-between px-5 py-4 border-b border-gray-100"
-            style={{ background: '#1a3a6b' }}
+            className="flex items-center justify-between px-5 py-4 border-b border-gray-100 bg-[#1a3a6b]"
           >
             <DialogTitle className="text-white font-bold text-sm">
               Seleccionar cliente

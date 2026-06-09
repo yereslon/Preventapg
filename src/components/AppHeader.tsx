@@ -40,15 +40,13 @@ export function AppHeader({
 
   return (
     <header
-      className="sticky top-0 z-30 shadow-lg"
-      style={{ background: 'linear-gradient(135deg, #1a3a6b 0%, #2554a0 60%, #c0392b 100%)' }}
+      className="sticky top-0 z-30 shadow-lg bg-[linear-gradient(135deg,#1a3a6b_0%,#2554a0_60%,#c0392b_100%)]"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
         {/* Logo + marca */}
         <div className="flex items-center gap-3 min-w-0">
           <span
-            className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-black text-sm shrink-0"
-            style={{ background: '#c0392b' }}
+            className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-black text-sm shrink-0 bg-[#c0392b]"
           >
             PG
           </span>

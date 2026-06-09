@@ -62,8 +62,7 @@ export function HistorialView({ onCerrar, onAbrirPedido }: Props) {
       {nivel === 'clientes' && (
         <>
           <div
-            className="sticky top-0 z-10 flex items-center gap-3 px-4 py-3 text-white shadow"
-            style={{ background: '#1a3a6b' }}
+            className="sticky top-0 z-10 flex items-center gap-3 px-4 py-3 text-white shadow bg-[#1a3a6b]"
           >
             <button
               onClick={onCerrar}
@@ -124,8 +123,7 @@ export function HistorialView({ onCerrar, onAbrirPedido }: Props) {
       {nivel === 'pedidos' && clienteActivo && (
         <>
           <div
-            className="sticky top-0 z-10 flex items-center gap-3 px-4 py-3 text-white shadow"
-            style={{ background: '#1a3a6b' }}
+            className="sticky top-0 z-10 flex items-center gap-3 px-4 py-3 text-white shadow bg-[#1a3a6b]"
           >
             <button
               onClick={volverAClientes}
@@ -171,8 +169,7 @@ export function HistorialView({ onCerrar, onAbrirPedido }: Props) {
       {nivel === 'detalle' && pedidoActivo && clienteActivo && (
         <>
           <div
-            className="sticky top-0 z-10 flex items-center gap-3 px-4 py-3 text-white shadow"
-            style={{ background: '#1a3a6b' }}
+            className="sticky top-0 z-10 flex items-center gap-3 px-4 py-3 text-white shadow bg-[#1a3a6b]"
           >
             <button
               onClick={volverAPedidos}
@@ -251,10 +248,7 @@ export function HistorialView({ onCerrar, onAbrirPedido }: Props) {
                 pedidoActivo.ubicacion,
                 pedidoActivo.items,
               )}
-              className="w-full py-3 rounded-xl text-sm font-bold text-white transition-colors"
-              style={{ background: '#1a3a6b' }}
-              onMouseEnter={e => (e.currentTarget.style.background = '#2554a0')}
-              onMouseLeave={e => (e.currentTarget.style.background = '#1a3a6b')}
+              className="w-full py-3 rounded-xl text-sm font-bold text-white transition-colors bg-[#1a3a6b] hover:bg-[#2554a0]"
             >
               Abrir y editar pedido
             </button>

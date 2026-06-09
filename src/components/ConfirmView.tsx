@@ -122,8 +122,7 @@ export function ConfirmView({ summary, whatsapp, onCerrar }: Props) {
           <button
             onClick={enviarPDFporWhatsApp}
             disabled={compartiendo}
-            className="w-full flex items-center justify-center gap-3 py-4 rounded-xl text-white font-bold text-sm transition-all disabled:opacity-70"
-            style={{ background: compartiendo ? '#1a9e50' : '#25D366' }}
+            className={`w-full flex items-center justify-center gap-3 py-4 rounded-xl text-white font-bold text-sm transition-all disabled:opacity-70 ${compartiendo ? 'bg-[#1a9e50]' : 'bg-[#25D366]'}`}
           >
             {compartiendo ? (
               <>
@@ -185,10 +184,7 @@ export function ConfirmView({ summary, whatsapp, onCerrar }: Props) {
         {/* Nuevo pedido */}
         <button
           onClick={onCerrar}
-          className="w-full py-3 rounded-xl text-sm font-bold text-white transition-colors"
-          style={{ background: '#1a3a6b' }}
-          onMouseEnter={e => (e.currentTarget.style.background = '#2554a0')}
-          onMouseLeave={e => (e.currentTarget.style.background = '#1a3a6b')}
+          className="w-full py-3 rounded-xl text-sm font-bold text-white transition-colors bg-[#1a3a6b] hover:bg-[#2554a0]"
         >
           Hacer otro pedido
         </button>

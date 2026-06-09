@@ -12,12 +12,9 @@ interface Props {
 
 export function TabBar({ sesiones, activoId, onSeleccionar, onCerrar, onNuevo, onHistorial }: Props) {
   return (
-    <div className="flex items-end" style={{ background: '#162d4a' }}>
+    <div className="flex items-end bg-[#162d4a]">
       {/* Zona scrollable: pestañas + botón Nuevo */}
-      <div
-        className="flex items-end gap-1 px-3 pt-1.5 overflow-x-auto flex-1 min-w-0"
-        style={{ scrollbarWidth: 'none' }}
-      >
+      <div className="flex items-end gap-1 px-3 pt-1.5 overflow-x-auto flex-1 min-w-0 [scrollbar-width:none]">
         {sesiones.map(s => {
           const activa = s.id === activoId;
           const total = s.items.reduce((sum, i) => sum + i.precio * i.cantidad, 0);
