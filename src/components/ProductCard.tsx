@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { djb2 } from '../utils/hash';
 import type { CatalogItem } from '../types/catalog';
 import type { CartItem } from '../types/cart';
 import { formatSoles } from '../utils/format';
@@ -31,8 +32,7 @@ const PALETTE = [
 
 function getCategoriaColor(categoria: string) {
   if (!CATEGORIA_COLORS[categoria]) {
-    const idx = Object.keys(CATEGORIA_COLORS).length % PALETTE.length;
-    CATEGORIA_COLORS[categoria] = PALETTE[idx];
+    CATEGORIA_COLORS[categoria] = PALETTE[djb2(categoria) % PALETTE.length];
   }
   return CATEGORIA_COLORS[categoria];
 }

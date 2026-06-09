@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { djb2 } from '../useExcelData';
+import { djb2 } from '../../utils/hash';
 
 describe('djb2', () => {
   it('devuelve un número no-negativo', () => {
