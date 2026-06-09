@@ -148,7 +148,7 @@ export function CartPanel({
                 <button
                   onClick={() => handleEliminar(item.cartKey, item.nombre)}
                   className="shrink-0 -mt-1 -mr-1 w-11 h-11 flex items-center justify-center rounded-full text-gray-400 hover:text-red-600 transition-colors"
-                  title="Eliminar"
+                  aria-label={`Eliminar ${item.nombre}`}
                 >
                   ✕
                 </button>
@@ -161,6 +161,7 @@ export function CartPanel({
                   onIncrement={() => onSumarUno(item.cartKey)}
                   onDecrement={() => onQuitarUno(item.cartKey)}
                   onChange={v => onCambiarCantidad(item.cartKey, v)}
+                  productoNombre={item.nombre}
                 />
                 <span className="text-xs font-bold text-red-700 shrink-0">
                   {formatSoles(item.precio * item.cantidad)}

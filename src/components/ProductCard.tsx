@@ -179,6 +179,7 @@ function ProductModal({ item, color, precioNegociado, onClose, onAgregar }: Moda
             </div>
             <button
               onClick={onClose}
+              aria-label={`Cerrar ${item.nombre}`}
               className="shrink-0 w-8 h-8 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors text-lg leading-none"
             >
               ✕
@@ -228,6 +229,7 @@ function ProductModal({ item, color, precioNegociado, onClose, onAgregar }: Moda
                 onChange={setCantidad}
                 snapFn={snapCantidad}
                 min={0.25}
+                productoNombre={item.nombre}
               />
             </div>
           </div>

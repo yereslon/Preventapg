@@ -73,14 +73,14 @@ describe('CartPanel — interacciones con ítems', () => {
   it('llama onSumarUno con el cartKey al hacer clic en +', async () => {
     const onSumarUno = vi.fn();
     renderConItem({ onSumarUno });
-    await userEvent.click(screen.getByRole('button', { name: '+' }));
+    await userEvent.click(screen.getByRole('button', { name: /aumentar cantidad/i }));
     expect(onSumarUno).toHaveBeenCalledWith('clave-1');
   });
 
   it('llama onQuitarUno con el cartKey al hacer clic en −', async () => {
     const onQuitarUno = vi.fn();
     renderConItem({ onQuitarUno });
-    await userEvent.click(screen.getByRole('button', { name: '−' }));
+    await userEvent.click(screen.getByRole('button', { name: /reducir cantidad/i }));
     expect(onQuitarUno).toHaveBeenCalledWith('clave-1');
   });
 
@@ -126,21 +126,21 @@ describe('CartPanel — undo de eliminación', () => {
 
   it('muestra el toast "Deshacer" al hacer clic en eliminar', () => {
     renderConItem();
-    act(() => { fireEvent.click(screen.getByTitle('Eliminar')); });
+    act(() => { fireEvent.click(screen.getByRole('button', { name: /eliminar bolsa negra/i })); });
     expect(screen.getByText('Deshacer')).toBeInTheDocument();
   });
 
   it('NO llama onEliminar inmediatamente (espera el timer de 5 s)', () => {
     const onEliminar = vi.fn();
     renderConItem({ onEliminar });
-    act(() => { fireEvent.click(screen.getByTitle('Eliminar')); });
+    act(() => { fireEvent.click(screen.getByRole('button', { name: /eliminar bolsa negra/i })); });
     expect(onEliminar).not.toHaveBeenCalled();
   });
 
   it('llama onEliminar después de que vence el timer', () => {
     const onEliminar = vi.fn();
     renderConItem({ onEliminar });
-    act(() => { fireEvent.click(screen.getByTitle('Eliminar')); });
+    act(() => { fireEvent.click(screen.getByRole('button', { name: /eliminar bolsa negra/i })); });
     act(() => { vi.runAllTimers(); });
     expect(onEliminar).toHaveBeenCalledWith('clave-1');
   });
@@ -148,7 +148,7 @@ describe('CartPanel — undo de eliminación', () => {
   it('"Deshacer" cancela la eliminación y onEliminar no se llama nunca', () => {
     const onEliminar = vi.fn();
     renderConItem({ onEliminar });
-    act(() => { fireEvent.click(screen.getByTitle('Eliminar')); });
+    act(() => { fireEvent.click(screen.getByRole('button', { name: /eliminar bolsa negra/i })); });
     act(() => { fireEvent.click(screen.getByText('Deshacer')); });
     act(() => { vi.runAllTimers(); });
     expect(onEliminar).not.toHaveBeenCalled();

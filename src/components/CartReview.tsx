@@ -190,8 +190,8 @@ export function CartReview({
                               placeholder="Añade una nota…"
                             />
                             <div className="flex flex-col gap-1">
-                              <button onClick={() => confirmEditNota(item.cartKey)} className="px-2 py-1 rounded-lg bg-green-500 hover:bg-green-600 text-white text-xs font-bold transition-colors">✓</button>
-                              <button onClick={() => setEditingNotaId(null)} className="px-2 py-1 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs font-bold transition-colors">✕</button>
+                              <button onClick={() => confirmEditNota(item.cartKey)} aria-label="Confirmar nota" className="px-2 py-1 rounded-lg bg-green-500 hover:bg-green-600 text-white text-xs font-bold transition-colors">✓</button>
+                              <button onClick={() => setEditingNotaId(null)} aria-label="Cancelar edición de nota" className="px-2 py-1 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs font-bold transition-colors">✕</button>
                             </div>
                           </div>
                         ) : (
@@ -210,7 +210,7 @@ export function CartReview({
                       <button
                         onClick={() => onEliminar(item.cartKey)}
                         className="mt-0.5 shrink-0 w-6 h-6 flex items-center justify-center rounded-full text-gray-500 hover:text-red-600 transition-colors text-xs"
-                        title="Eliminar"
+                        aria-label={`Eliminar ${item.nombre}`}
                       >
                         ✕
                       </button>
@@ -239,12 +239,14 @@ export function CartReview({
                             />
                             <button
                               onClick={() => confirmEditPrice(item.cartKey)}
+                              aria-label="Confirmar precio"
                               className="px-2 py-1 rounded-lg bg-green-500 hover:bg-green-600 text-white text-xs font-bold transition-colors"
                             >
                               ✓
                             </button>
                             <button
                               onClick={cancelEditPrice}
+                              aria-label="Cancelar edición de precio"
                               className="px-2 py-1 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs font-bold transition-colors"
                             >
                               ✕
@@ -273,6 +275,7 @@ export function CartReview({
                         onIncrement={() => onSumarUno(item.cartKey)}
                         onDecrement={() => onQuitarUno(item.cartKey)}
                         onChange={v => onCambiarCantidad(item.cartKey, v)}
+                        productoNombre={item.nombre}
                       />
 
                       {/* Subtotal */}
@@ -299,6 +302,7 @@ export function CartReview({
                     <h3 className="text-sm font-bold text-gray-800">Producto personalizado</h3>
                     <button
                       onClick={() => { setMostrarFormManual(false); setManual(MANUAL_VACIO); setErrManual(''); }}
+                      aria-label="Cerrar formulario de producto personalizado"
                       className="text-gray-400 hover:text-gray-600 text-lg leading-none"
                     >✕</button>
                   </div>

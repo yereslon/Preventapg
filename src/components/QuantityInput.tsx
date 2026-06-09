@@ -11,6 +11,8 @@ interface Props {
   snapFn?: (v: number) => number;
   /** Valor mínimo aceptado (default 0.01) */
   min?: number;
+  /** Nombre del producto para aria-labels contextuales */
+  productoNombre?: string;
 }
 
 function fmt(v: number): string {
@@ -19,7 +21,7 @@ function fmt(v: number): string {
 
 export function QuantityInput({
   value, onIncrement, onDecrement, onChange,
-  size = 'md', snapFn, min = 0.01,
+  size = 'md', snapFn, min = 0.01, productoNombre,
 }: Props) {
   const [raw, setRaw] = useState(fmt(value));
   const [focused, setFocused] = useState(false);
@@ -67,9 +69,12 @@ export function QuantityInput({
       ? 'flex items-center border border-gray-200 rounded-xl overflow-hidden bg-gray-50'
       : 'flex items-center border border-gray-200 rounded-lg overflow-hidden bg-white';
 
+  const labelReducir = productoNombre ? `Reducir cantidad de ${productoNombre}` : 'Reducir cantidad';
+  const labelAumentar = productoNombre ? `Aumentar cantidad de ${productoNombre}` : 'Aumentar cantidad';
+
   return (
     <div className={container}>
-      <button type="button" onClick={onDecrement} className={btn}>−</button>
+      <button type="button" onClick={onDecrement} className={btn} aria-label={labelReducir}>−</button>
       <input
         type="number"
         inputMode="decimal"
@@ -80,8 +85,9 @@ export function QuantityInput({
         onFocus={e => { setFocused(true); e.target.select(); }}
         onBlur={handleBlur}
         className={inp}
+        aria-label={productoNombre ? `Cantidad de ${productoNombre}` : 'Cantidad'}
       />
-      <button type="button" onClick={onIncrement} className={btn}>+</button>
+      <button type="button" onClick={onIncrement} className={btn} aria-label={labelAumentar}>+</button>
     </div>
   );
 }

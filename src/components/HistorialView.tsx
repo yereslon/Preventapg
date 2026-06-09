@@ -67,6 +67,7 @@ export function HistorialView({ onCerrar, onAbrirPedido }: Props) {
           >
             <button
               onClick={onCerrar}
+              aria-label="Cerrar historial"
               className="text-white/70 hover:text-white transition-colors font-bold text-lg leading-none"
             >
               ←
@@ -128,6 +129,7 @@ export function HistorialView({ onCerrar, onAbrirPedido }: Props) {
           >
             <button
               onClick={volverAClientes}
+              aria-label="Volver a la lista de clientes"
               className="text-white/70 hover:text-white transition-colors font-bold text-lg leading-none"
             >
               ←
@@ -174,6 +176,7 @@ export function HistorialView({ onCerrar, onAbrirPedido }: Props) {
           >
             <button
               onClick={volverAPedidos}
+              aria-label={`Volver a los pedidos de ${formatNombreCliente(clienteActivo.nombre)}`}
               className="text-white/70 hover:text-white transition-colors font-bold text-lg leading-none"
             >
               ←

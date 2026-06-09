@@ -210,6 +210,7 @@ export function CatalogoView({
               </span>
               <button
                 onClick={onCerrarCarrito}
+                aria-label="Cerrar pedido"
                 className="text-gray-400 hover:text-gray-700 text-xl leading-none"
               >
                 ✕

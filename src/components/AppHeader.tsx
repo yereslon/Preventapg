@@ -74,6 +74,7 @@ export function AppHeader({
           {busqueda && (
             <button
               onClick={() => setBusqueda('')}
+              aria-label="Limpiar búsqueda"
               className="absolute right-2.5 top-1/2 -translate-y-1/2 text-white/50 hover:text-white text-base leading-none transition-colors"
             >
               ✕
@@ -182,6 +183,7 @@ export function AppHeader({
         {busqueda && (
           <button
             onClick={() => setBusqueda('')}
+            aria-label="Limpiar búsqueda"
             className="absolute right-6 top-1/2 -translate-y-1/2 text-white/50 hover:text-white text-base leading-none transition-colors"
           >
             ✕
