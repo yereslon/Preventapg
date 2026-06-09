@@ -3,6 +3,8 @@ import type { CartState } from '../types/cart';
 import { formatSoles } from '../utils/format';
 import { QuantityInput } from './QuantityInput';
 
+const UNDO_DELAY_MS = 5000;
+
 type PendingDelete = { cartKey: string; nombre: string };
 
 interface Props {
@@ -39,7 +41,7 @@ export function CartPanel({
     timerRef.current = setTimeout(() => {
       onEliminar(cartKey);
       setPendingDelete(null);
-    }, 5000);
+    }, UNDO_DELAY_MS);
     setPendingDelete({ cartKey, nombre });
   }
 
