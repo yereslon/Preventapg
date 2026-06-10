@@ -1,34 +1,17 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import type { CatalogItem, OrderFormData } from '../types/catalog';
 import type { CartItem, CartState } from '../types/cart';
 import type { ClientSession, ClienteHistorial, ProductoHistorial, PedidoHistorial } from '../types/clients';
 import type { OrderSummary } from '../types/order';
-
-const SESIONES_KEY = 'pg_sesiones';
-const LEGACY_KEY = 'pg_carrito';
+import { kvGet, kvSet, histGet, histSet } from '../utils/db';
 
 let _idCounter = 0;
 function genId(): string {
   return 'ses-' + Date.now().toString(36) + '-' + (++_idCounter).toString(36);
 }
 
-function normalizarNombreHist(s: string): string {
+export function normalizarNombreCliente(s: string): string {
   return s.trim().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/\s+/g, '_');
-}
-
-function histKey(nombre: string): string {
-  return `pg_hist_${normalizarNombreHist(nombre)}`;
-}
-
-function cargarHistorial(nombre: string): ClienteHistorial {
-  try {
-    const raw = localStorage.getItem(histKey(nombre));
-    if (raw) {
-      const parsed = JSON.parse(raw) as ClienteHistorial;
-      return { ...parsed, pedidos: parsed.pedidos ?? [] };
-    }
-  } catch { /* ignore */ }
-  return { ultimosProductos: [], preciosNegociados: {}, pedidos: [] };
 }
 
 function buildHistorial(
@@ -57,48 +40,29 @@ function buildHistorial(
   return { ultimosProductos, preciosNegociados, pedidos };
 }
 
-function cargarSesiones(): ClientSession[] {
-  try {
-    const raw = localStorage.getItem(SESIONES_KEY);
-    if (raw) return JSON.parse(raw) as ClientSession[];
-
-    // Migración desde pg_carrito legacy
-    const legacy = localStorage.getItem(LEGACY_KEY);
-    if (legacy) {
-      const items = JSON.parse(legacy) as CartItem[];
-      localStorage.removeItem(LEGACY_KEY);
-      if (items.length > 0) {
-        return [{
-          id: 'migrado-' + Date.now().toString(36),
-          nombre: 'Cliente sin asignar',
-          ubicacion: '',
-          esNuevo: true,
-          items,
-          vista: 'catalogo',
-          orderForm: { nombre: '', ubicacion: '', notas: '' },
-          preciosNegociados: {},
-          ultimosProductos: [],
-        }];
-      }
-    }
-  } catch { /* ignore */ }
-  return [];
-}
-
-function guardar(sesiones: ClientSession[]) {
-  try { localStorage.setItem(SESIONES_KEY, JSON.stringify(sesiones)); } catch { /* quota */ }
-}
-
 export function useClients() {
-  const initial = cargarSesiones();
-  const [sesiones, setSesionesRaw] = useState<ClientSession[]>(initial);
-  const [activoId, setActivoId] = useState<string | null>(initial[0]?.id ?? null);
+  const [sesiones, setSesiones] = useState<ClientSession[]>([]);
+  const [activoId, setActivoId] = useState<string | null>(null);
   const [modalAbierto, setModalAbierto] = useState<boolean>(false);
+  const [_dbListo, _setDbListo] = useState(false);
 
-  function setSesiones(next: ClientSession[]) {
-    setSesionesRaw(next);
-    guardar(next);
-  }
+  // Carga inicial desde IndexedDB
+  useEffect(() => {
+    let activo = true;
+    kvGet('pg_sesiones').then(raw => {
+      if (!activo) return;
+      const ses = Array.isArray(raw) ? (raw as ClientSession[]) : [];
+      setSesiones(ses);
+      setActivoId(ses[0]?.id ?? null);
+      _setDbListo(true);
+    }).catch(() => { if (activo) _setDbListo(true); });
+    return () => { activo = false; };
+  }, []);
+
+  // Persiste sesiones en IndexedDB cuando cambian (solo después de que la DB esté lista)
+  useEffect(() => {
+    if (_dbListo) kvSet('pg_sesiones', sesiones).catch(() => {});
+  }, [sesiones, _dbListo]);
 
   const sesionActiva = useMemo(
     () => sesiones.find(s => s.id === activoId) ?? null,
@@ -114,60 +78,78 @@ export function useClients() {
     };
   }, [sesionActiva]);
 
-  // ── Session management ──────────────────────────────
+  // ── Gestión de sesiones ─────────────────────────────────────
 
   function crearSesion(nombre: string, ubicacion: string, esNuevo: boolean) {
     const id = genId();
-    const hist = esNuevo
-      ? { ultimosProductos: [], preciosNegociados: {} }
-      : cargarHistorial(nombre);
     const sesion: ClientSession = {
       id, nombre, ubicacion, esNuevo,
       items: [],
       vista: 'catalogo',
       orderForm: { nombre, ubicacion, notas: '' },
-      preciosNegociados: hist.preciosNegociados,
-      ultimosProductos: hist.ultimosProductos,
+      preciosNegociados: {},
+      ultimosProductos: [],
     };
-    const next = [...sesiones, sesion];
-    setSesiones(next);
+    setSesiones(prev => [...prev, sesion]);
     setActivoId(id);
     setModalAbierto(false);
+
+    if (!esNuevo) {
+      histGet(normalizarNombreCliente(nombre)).then(raw => {
+        const hist = raw as ClienteHistorial | undefined;
+        if (hist) {
+          setSesiones(prev => prev.map(s =>
+            s.id === id
+              ? { ...s, preciosNegociados: hist.preciosNegociados ?? {}, ultimosProductos: hist.ultimosProductos ?? [] }
+              : s
+          ));
+        }
+      }).catch(() => {});
+    }
   }
 
   function crearSesionConItems(nombre: string, ubicacion: string, items: CartItem[]) {
     const id = genId();
-    const hist = cargarHistorial(nombre);
     const sesion: ClientSession = {
       id, nombre, ubicacion, esNuevo: false,
       items: items.map((i, idx) => ({ ...i, cartKey: `${i.id}_${idx}` })),
       vista: 'catalogo',
       orderForm: { nombre, ubicacion, notas: '' },
-      preciosNegociados: hist.preciosNegociados,
-      ultimosProductos: hist.ultimosProductos,
+      preciosNegociados: {},
+      ultimosProductos: [],
     };
-    const next = [...sesiones, sesion];
-    setSesiones(next);
+    setSesiones(prev => [...prev, sesion]);
     setActivoId(id);
     setModalAbierto(false);
+
+    histGet(normalizarNombreCliente(nombre)).then(raw => {
+      const hist = raw as ClienteHistorial | undefined;
+      if (hist) {
+        setSesiones(prev => prev.map(s =>
+          s.id === id
+            ? { ...s, preciosNegociados: hist.preciosNegociados ?? {}, ultimosProductos: hist.ultimosProductos ?? [] }
+            : s
+        ));
+      }
+    }).catch(() => {});
   }
 
   function cerrarSesion(id: string) {
     const next = sesiones.filter(s => s.id !== id);
     setSesiones(next);
-    if (activoId === id) {
-      setActivoId(next[0]?.id ?? null);
-      // modal no se abre automáticamente — el usuario usa ＋ Nuevo
-    }
+    if (activoId === id) setActivoId(next[0]?.id ?? null);
   }
 
   function setActivo(id: string) {
     setActivoId(id);
   }
 
-  function confirmarSesion(form: OrderFormData): OrderSummary {
+  async function confirmarSesion(form: OrderFormData): Promise<OrderSummary> {
     const sesion = sesiones.find(s => s.id === activoId);
     if (!sesion) throw new Error('No hay sesión activa');
+
+    const idCerrar = activoId!;
+    const next = sesiones.filter(s => s.id !== idCerrar);
 
     const summary: OrderSummary = {
       numeroPedido: 'PED-' + Date.now().toString(36).toUpperCase(),
@@ -177,8 +159,11 @@ export function useClients() {
       total: sesion.items.reduce((s, i) => s + i.precio * i.cantidad, 0),
     };
 
+    // Guardar historial en IndexedDB
     try {
-      const historialPrevio = cargarHistorial(sesion.nombre);
+      const clave = normalizarNombreCliente(sesion.nombre);
+      const prevRaw = await histGet(clave);
+      const prev = (prevRaw as ClienteHistorial) ?? { ultimosProductos: [], preciosNegociados: {}, pedidos: [] };
       const nuevoPedido: PedidoHistorial = {
         numeroPedido: summary.numeroPedido,
         fecha: summary.fecha,
@@ -187,13 +172,9 @@ export function useClients() {
         notas: summary.form.notas,
         items: [...sesion.items],
       };
-      localStorage.setItem(
-        histKey(sesion.nombre),
-        JSON.stringify(buildHistorial(sesion.items, historialPrevio, nuevoPedido))
-      );
-    } catch { /* quota */ }
+      await histSet({ nombre: clave, ...buildHistorial(sesion.items, prev, nuevoPedido) });
+    } catch { /* ignore */ }
 
-    const next = sesiones.filter(s => s.id !== activoId);
     setSesiones(next);
     setActivoId(next[0]?.id ?? null);
 
@@ -210,7 +191,7 @@ export function useClients() {
     setSesiones(sesiones.map(s => s.id === activoId ? { ...s, orderForm: form } : s));
   }
 
-  // ── Cart operations ─────────────────────────────────
+  // ── Operaciones de carrito ──────────────────────────────────
 
   function _updateItems(updater: (items: CartItem[]) => CartItem[]) {
     if (!activoId) return;
@@ -310,6 +291,7 @@ export function useClients() {
     sesionActiva,
     modalAbierto,
     setModalAbierto,
+    _dbListo,
     cart,
     crearSesion,
     crearSesionConItems,

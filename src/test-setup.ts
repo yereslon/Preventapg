@@ -1,4 +1,5 @@
 import '@testing-library/jest-dom';
+import 'fake-indexeddb/auto';
 
 // jsdom no implementa ResizeObserver ni IntersectionObserver (los usa Headless UI v2)
 global.ResizeObserver = class ResizeObserver {

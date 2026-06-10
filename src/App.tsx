@@ -44,8 +44,8 @@ export default function App() {
     setCartBumpKey(k => k + 1);
   }
 
-  function handleConfirmar(form: Parameters<typeof confirmarSesion>[0]) {
-    const summary = confirmarSesion(form);
+  async function handleConfirmar(form: Parameters<typeof confirmarSesion>[0]) {
+    const summary = await confirmarSesion(form);
     setUltimoPedido(summary);
   }
 
