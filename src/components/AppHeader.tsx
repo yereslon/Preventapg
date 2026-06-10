@@ -11,6 +11,7 @@ interface Props {
   onCarritoClick: () => void;
   onRecargar: () => void;
   onHistorial: () => void;
+  onLiquidacion: () => void;
 }
 
 export function AppHeader({
@@ -21,6 +22,7 @@ export function AppHeader({
   onCarritoClick,
   onRecargar,
   onHistorial,
+  onLiquidacion,
 }: Props) {
   const [importError, setImportError] = useState('');
   const fileRef = useRef<HTMLInputElement>(null);
@@ -117,6 +119,15 @@ export function AppHeader({
                 className="w-full text-left px-4 py-2.5 text-sm text-gray-700 data-[focus]:bg-gray-50 flex items-center gap-2 transition-colors"
               >
                 <span>⏰</span> Historial de pedidos
+              </button>
+            </MenuItem>
+
+            <MenuItem>
+              <button
+                onClick={onLiquidacion}
+                className="w-full text-left px-4 py-2.5 text-sm text-gray-700 data-[focus]:bg-gray-50 flex items-center gap-2 transition-colors"
+              >
+                <span>📋</span> Liquidacion del dia
               </button>
             </MenuItem>
 

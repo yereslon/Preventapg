@@ -6,6 +6,7 @@ import { AppHeader } from './components/AppHeader';
 import { TabBar } from './components/TabBar';
 import { ClientModal } from './components/ClientModal';
 import { HistorialView } from './components/HistorialView';
+import { LiquidacionView } from './components/LiquidacionView';
 import { CatalogoView } from './components/CatalogoView';
 import { RevisionView } from './components/RevisionView';
 import { ConfirmadoView } from './components/ConfirmadoView';
@@ -27,10 +28,11 @@ export default function App() {
   const [cartBumpKey, setCartBumpKey] = useState(0);
   const [ultimoPedido, setUltimoPedido] = useState<OrderSummary | null>(null);
   const [historialAbierto, setHistorialAbierto] = useState(false);
+  const [liquidacionAbierta, setLiquidacionAbierta] = useState(false);
   const [carritoAbierto, setCarritoAbierto] = useState(false);
 
   const vista = sesionActiva?.vista ?? 'catalogo';
-  const enCatalogo = !historialAbierto && !ultimoPedido && vista !== 'revision';
+  const enCatalogo = !historialAbierto && !liquidacionAbierta && !ultimoPedido && vista !== 'revision';
 
   function handleAgregar(
     item: CatalogItem,
@@ -67,6 +69,7 @@ export default function App() {
         onCarritoClick={enCatalogo ? () => setCarritoAbierto(o => !o) : () => {}}
         onRecargar={() => window.location.reload()}
         onHistorial={() => setHistorialAbierto(true)}
+        onLiquidacion={() => setLiquidacionAbierta(true)}
       />
       <TabBar
         sesiones={sesiones}
@@ -77,7 +80,11 @@ export default function App() {
         onHistorial={() => setHistorialAbierto(true)}
       />
 
-      {historialAbierto && (
+      {liquidacionAbierta && (
+        <LiquidacionView onCerrar={() => setLiquidacionAbierta(false)} />
+      )}
+
+      {!liquidacionAbierta && historialAbierto && (
         <HistorialView
           onCerrar={() => setHistorialAbierto(false)}
           onAbrirPedido={(nombre, ubicacion, items) => {
@@ -88,7 +95,7 @@ export default function App() {
         />
       )}
 
-      {!historialAbierto && ultimoPedido && (
+      {!liquidacionAbierta && !historialAbierto && ultimoPedido && (
         <ConfirmadoView
           summary={ultimoPedido}
           whatsapp={whatsapp}
@@ -99,7 +106,7 @@ export default function App() {
         />
       )}
 
-      {!historialAbierto && !ultimoPedido && vista === 'revision' && (
+      {!liquidacionAbierta && !historialAbierto && !ultimoPedido && vista === 'revision' && (
         <RevisionView
           cart={cart}
           ubicaciones={ubicaciones}

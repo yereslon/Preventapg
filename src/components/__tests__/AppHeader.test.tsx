@@ -21,6 +21,7 @@ const BASE = {
   onCarritoClick: vi.fn(),
   onRecargar: vi.fn(),
   onHistorial: vi.fn(),
+  onLiquidacion: vi.fn(),
 };
 
 describe('AppHeader', () => {
@@ -95,6 +96,14 @@ describe('AppHeader', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Opciones' }));
     await userEvent.click(screen.getByText('Historial de pedidos'));
     expect(onHistorial).toHaveBeenCalledTimes(1);
+  });
+
+  it('llama onLiquidacion al hacer clic en "Liquidacion del dia"', async () => {
+    const onLiquidacion = vi.fn();
+    render(<AppHeader {...BASE} onLiquidacion={onLiquidacion} />);
+    await userEvent.click(screen.getByRole('button', { name: 'Opciones' }));
+    await userEvent.click(screen.getByText('Liquidacion del dia'));
+    expect(onLiquidacion).toHaveBeenCalledTimes(1);
   });
 
   it('llama exportarDatos al hacer clic en "Exportar datos"', async () => {

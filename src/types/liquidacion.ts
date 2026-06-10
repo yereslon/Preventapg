@@ -10,6 +10,7 @@ export interface CobroCliente {
   efectivo: number;
   yape: number;
   fotos: FotoEvidencia[];
+  comentario: string;
 }
 
 export interface GastoLinea {
@@ -31,6 +32,7 @@ export interface Liquidacion {
   dias: DiaViatico[];
   fondoAsignado: number;
   notas: string;
+  guardada: boolean;
 }
 
 export interface LiquidacionTotales {

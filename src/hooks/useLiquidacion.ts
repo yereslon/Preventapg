@@ -3,7 +3,8 @@ import type {
   Liquidacion, LiquidacionTotales,
   CobroCliente, DiaViatico, GastoLinea, FotoEvidencia,
 } from '../types/liquidacion';
-import { liqGet, liqSet } from '../utils/db';
+import type { PedidoHistorial } from '../types/clients';
+import { liqGet, liqSet, histAll } from '../utils/db';
 
 function getFechaHoy(): string {
   return new Date().toISOString().slice(0, 10);
@@ -14,7 +15,7 @@ function genId(): string {
 }
 
 function crearVacia(fecha: string): Liquidacion {
-  return { id: `liq-${fecha}`, fecha, cobros: [], dias: [], fondoAsignado: 0, notas: '' };
+  return { id: `liq-${fecha}`, fecha, cobros: [], dias: [], fondoAsignado: 0, notas: '', guardada: false };
 }
 
 function calcTotales(liq: Liquidacion): LiquidacionTotales {
@@ -50,7 +51,8 @@ export function useLiquidacion() {
     const fecha = getFechaHoy();
     liqGet(`liq-${fecha}`).then(raw => {
       if (!activo) return;
-      setLiquidacion(raw ? (raw as Liquidacion) : crearVacia(fecha));
+      const loaded = raw ? { guardada: false, ...(raw as Liquidacion) } : crearVacia(fecha);
+      setLiquidacion(loaded);
       _setDbListo(true);
     }).catch(() => {
       if (activo) { setLiquidacion(crearVacia(getFechaHoy())); _setDbListo(true); }
@@ -73,11 +75,11 @@ export function useLiquidacion() {
   // ── Cobros ──────────────────────────────────────────────────
 
   function agregarCobro(nombre: string): void {
-    const nuevo: CobroCliente = { id: genId(), nombre, efectivo: 0, yape: 0, fotos: [] };
+    const nuevo: CobroCliente = { id: genId(), nombre, efectivo: 0, yape: 0, fotos: [], comentario: '' };
     setLiquidacion(prev => prev ? { ...prev, cobros: [...prev.cobros, nuevo] } : prev);
   }
 
-  function actualizarCobro(id: string, campos: Partial<Pick<CobroCliente, 'nombre' | 'efectivo' | 'yape'>>): void {
+  function actualizarCobro(id: string, campos: Partial<Pick<CobroCliente, 'nombre' | 'efectivo' | 'yape' | 'comentario'>>): void {
     setLiquidacion(prev => prev
       ? { ...prev, cobros: prev.cobros.map(c => c.id === id ? { ...c, ...campos } : c) }
       : prev);
@@ -145,6 +147,54 @@ export function useLiquidacion() {
       : prev);
   }
 
+  // ── Importar pedidos del día ────────────────────────────────
+
+  async function importarPedidosDelDia(): Promise<number> {
+    if (!liquidacion) return 0;
+
+    const hoy = new Date();
+    const dd   = String(hoy.getDate()).padStart(2, '0');
+    const mm   = String(hoy.getMonth() + 1).padStart(2, '0');
+    const yyyy = hoy.getFullYear();
+    const fechaHoy = `${dd}/${mm}/${yyyy}`;
+
+    type HistRow = { nombre: string; pedidos?: PedidoHistorial[] };
+    const registros = await histAll() as HistRow[];
+
+    // Snapshot de nombres ya en cobros para detectar duplicados
+    const nombresExistentes = new Set(
+      liquidacion.cobros.map(c => c.nombre.trim().toLowerCase())
+    );
+
+    const nuevos: CobroCliente[] = [];
+    for (const r of registros) {
+      if (!r.pedidos?.length) continue;
+      const pedidosHoy = r.pedidos.filter(p => p.fecha === fechaHoy);
+      if (pedidosHoy.length === 0) continue;
+      const nombreNorm = r.nombre.trim().toLowerCase();
+      if (nombresExistentes.has(nombreNorm)) continue;
+
+      // Suma todos los pedidos del día (un cliente puede tener más de uno)
+      const totalDia = pedidosHoy.reduce((s, p) => s + p.total, 0);
+      nuevos.push({ id: genId(), nombre: r.nombre, efectivo: totalDia, yape: 0, fotos: [] });
+      nombresExistentes.add(nombreNorm);
+    }
+
+    if (nuevos.length > 0) {
+      setLiquidacion(prev =>
+        prev ? { ...prev, cobros: [...prev.cobros, ...nuevos] } : prev
+      );
+    }
+
+    return nuevos.length;
+  }
+
+  // ── Guardar / marcar como finalizada ────────────────────────
+
+  function guardarLiquidacion(): void {
+    setLiquidacion(prev => prev ? { ...prev, guardada: !prev.guardada } : prev);
+  }
+
   // ── General ─────────────────────────────────────────────────
 
   function setFondoAsignado(monto: number): void {
@@ -172,5 +222,7 @@ export function useLiquidacion() {
     eliminarGasto,
     setFondoAsignado,
     setNotas,
+    importarPedidosDelDia,
+    guardarLiquidacion,
   };
 }
