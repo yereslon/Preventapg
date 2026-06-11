@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 interface Props {
   value: number;
@@ -23,12 +23,12 @@ export function QuantityInput({
   value, onIncrement, onDecrement, onChange,
   size = 'md', snapFn, min = 0.01, productoNombre,
 }: Props) {
-  const [raw, setRaw] = useState(fmt(value));
+  const [raw, setRaw] = useState('');
   const [focused, setFocused] = useState(false);
 
-  useEffect(() => {
-    if (!focused) setRaw(fmt(value));
-  }, [value, focused]);
+  // Cuando no está enfocado, el display es siempre derivado del valor externo.
+  // Cuando está enfocado, mostramos lo que el usuario está escribiendo.
+  const displayValue = focused ? raw : fmt(value);
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     const text = e.target.value;
@@ -41,12 +41,8 @@ export function QuantityInput({
   function handleBlur() {
     setFocused(false);
     let num = parseFloat(raw);
-    if (isNaN(num) || num < min) {
-      setRaw(fmt(value));
-      return;
-    }
+    if (isNaN(num) || num < min) return;
     if (snapFn) num = snapFn(num);
-    setRaw(fmt(num));
     onChange(num);
   }
 
@@ -80,9 +76,9 @@ export function QuantityInput({
         inputMode="decimal"
         step="any"
         min={min}
-        value={raw}
+        value={displayValue}
         onChange={handleChange}
-        onFocus={e => { setFocused(true); e.target.select(); }}
+        onFocus={e => { setFocused(true); setRaw(fmt(value)); e.target.select(); }}
         onBlur={handleBlur}
         className={inp}
         aria-label={productoNombre ? `Cantidad de ${productoNombre}` : 'Cantidad'}
