@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 import { djb2 } from '../utils/hash';
 import type { CatalogItem } from '../types/catalog';
 import type { CartItem } from '../types/cart';
@@ -114,6 +115,7 @@ interface ModalProps {
 }
 
 function ProductModal({ item, color, precioNegociado, onClose, onAgregar }: ModalProps) {
+  useBodyScrollLock();
   const allOpciones = item.preciosExtra;
   const hasDropdown = allOpciones.length > 1;
 

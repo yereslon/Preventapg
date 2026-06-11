@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 import { useLiquidacion } from '../hooks/useLiquidacion';
 import { useClientRegistry } from '../hooks/useClientRegistry';
 import { CobrosModule } from './CobrosModule';
@@ -13,6 +14,7 @@ export function LiquidacionPanel() {
   const [tab, setTab] = useState<Tab>('cobros');
   const [modalGuardar, setModalGuardar] = useState(false);
   const [guardando, setGuardando] = useState(false);
+  useBodyScrollLock(modalGuardar);
 
   const { clientes } = useClientRegistry();
 

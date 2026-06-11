@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
+import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 import type { CatalogItem } from '../types/catalog';
 import type { CartState } from '../types/cart';
 import type { ClientSession } from '../types/clients';
@@ -49,6 +50,7 @@ export function CatalogoView({
   onVerPedido,
   onNuevoCliente,
 }: Props) {
+  useBodyScrollLock(carritoAbierto);
   const [categoriaActiva, setCategoriaActiva] = useState('Todas');
   const [busquedaFiltro, setBusquedaFiltro] = useState('');
 

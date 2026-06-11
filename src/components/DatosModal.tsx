@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, type ChangeEvent } from 'react';
 import { exportarDatos, importarDatos } from '../utils/backup';
+import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 
 const LIMITE_KEY = 'pg-storage-limit-mb';
 const LIMITE_DEFAULT = 500;
@@ -23,6 +24,7 @@ interface Props {
 }
 
 export function DatosModal({ onCerrar, onRecargar }: Props) {
+  useBodyScrollLock();
   const fileRef = useRef<HTMLInputElement>(null);
   const [importError, setImportError] = useState('');
   const [importOk, setImportOk]       = useState(false);

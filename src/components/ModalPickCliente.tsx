@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import type { ClienteRegistrado } from '../types/clients';
+import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 
 interface Props {
   clientes: ClienteRegistrado[];
@@ -13,6 +14,7 @@ function norm(s: string) {
 }
 
 export function ModalPickCliente({ clientes, excluir = [], onSeleccionar, onCerrar }: Props) {
+  useBodyScrollLock();
   const [busqueda, setBusqueda] = useState('');
 
   const excluirSet = new Set(excluir.map(norm));
