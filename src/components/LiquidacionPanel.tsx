@@ -4,11 +4,10 @@ import { useLiquidacion } from '../hooks/useLiquidacion';
 import { useClientRegistry } from '../hooks/useClientRegistry';
 import { CobrosModule } from './CobrosModule';
 import { ViaticosModule } from './ViaticosModule';
-import { PreventaModule } from './PreventaModule';
 import { formatSoles } from '../utils/format';
 import { exportarLiquidacionPDF } from '../utils/liquidacion-pdf';
 
-type Tab = 'cobros' | 'viaticos' | 'preventa';
+type Tab = 'cobros' | 'viaticos';
 
 export function LiquidacionPanel() {
   const [tab, setTab] = useState<Tab>('cobros');
@@ -37,9 +36,6 @@ export function LiquidacionPanel() {
     setNotas,
     importarPedidosDelDia,
     guardarLiquidacion,
-    agregarPreventa,
-    actualizarPreventa,
-    eliminarPreventa,
   } = useLiquidacion();
 
   async function handleConfirmarGuardado() {
@@ -86,21 +82,6 @@ export function LiquidacionPanel() {
       {/* Tabs */}
       <div className="flex bg-gray-100 rounded-2xl p-1 gap-1">
         <button
-          onClick={() => setTab('preventa')}
-          className={`flex-1 py-2 px-3 text-xs font-bold rounded-xl transition-all ${
-            tab === 'preventa'
-              ? 'bg-white text-[#1a3a6b] shadow-sm'
-              : 'text-gray-400 hover:text-gray-600'
-          }`}
-        >
-          Ruta
-          {(liquidacion.preventas?.length ?? 0) > 0 && (
-            <span className="ml-1.5 text-[10px] font-extrabold text-blue-500">
-              {liquidacion.preventas.filter(p => p.visitado).length}/{liquidacion.preventas.length}
-            </span>
-          )}
-        </button>
-        <button
           onClick={() => setTab('cobros')}
           className={`flex-1 py-2 px-3 text-xs font-bold rounded-xl transition-all ${
             tab === 'cobros'
@@ -133,16 +114,6 @@ export function LiquidacionPanel() {
       </div>
 
       {/* Contenido activo */}
-      {tab === 'preventa' && (
-        <PreventaModule
-          preventas={liquidacion.preventas ?? []}
-          clientes={clientes}
-          onAgregarPreventa={agregarPreventa}
-          onActualizarPreventa={actualizarPreventa}
-          onEliminarPreventa={eliminarPreventa}
-        />
-      )}
-
       {tab === 'cobros' && (
         <CobrosModule
           cobros={liquidacion.cobros}
@@ -263,13 +234,11 @@ export function LiquidacionPanel() {
         >
           <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm p-6 space-y-5 mb-2">
 
-            {/* Cabecera */}
             <div>
               <h2 className="text-base font-extrabold text-[#1a3a6b]">Confirmar guardado</h2>
               <p className="text-xs text-gray-400 mt-0.5 capitalize">{fechaFormateada}</p>
             </div>
 
-            {/* Resumen */}
             <div className="bg-gray-50 rounded-2xl p-4 space-y-2.5">
               {totales.tieneCobros && (
                 <>
@@ -299,7 +268,6 @@ export function LiquidacionPanel() {
               Al confirmar, la liquidacion quedara guardada y los registros del dia se limpiaran.
             </p>
 
-            {/* Botones */}
             <div className="flex gap-3">
               <button
                 onClick={() => setModalGuardar(false)}
