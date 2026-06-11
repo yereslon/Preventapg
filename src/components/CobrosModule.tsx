@@ -3,6 +3,7 @@ import type { CobroCliente, FotoEvidencia } from '../types/liquidacion';
 import type { ClienteRegistrado } from '../types/clients';
 import { comprimirImagenes } from '../utils/imagen';
 import { formatSoles } from '../utils/format';
+import { ModalPickCliente } from './ModalPickCliente';
 
 // ── Miniatura de foto de evidencia ───────────────────────────
 
@@ -36,9 +37,10 @@ interface CobroCardProps {
   onEliminar: () => void;
   onAgregarFoto: (dataUrl: string) => void;
   onEliminarFoto: (fotoId: string) => void;
+  onCambiarCliente: () => void;
 }
 
-function CobroCard({ cobro, onActualizar, onEliminar, onAgregarFoto, onEliminarFoto }: CobroCardProps) {
+function CobroCard({ cobro, onActualizar, onEliminar, onAgregarFoto, onEliminarFoto, onCambiarCliente }: CobroCardProps) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [subiendo, setSubiendo] = useState(false);
 
@@ -58,17 +60,17 @@ function CobroCard({ cobro, onActualizar, onEliminar, onAgregarFoto, onEliminarF
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 space-y-3">
 
-      {/* Nombre + eliminar */}
+      {/* Cliente + eliminar */}
       <div className="flex items-center gap-2">
-        <input
-          type="text"
-          list="liq-clientes-list"
-          value={cobro.nombre}
-          placeholder="Nombre del cliente"
-          onChange={e => onActualizar({ nombre: e.target.value })}
-          aria-label="Nombre del cliente"
-          className="flex-1 text-sm font-semibold text-gray-900 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1a3a6b]/20 focus:border-[#1a3a6b] placeholder-gray-300 transition"
-        />
+        <button
+          onClick={onCambiarCliente}
+          className="flex-1 text-left text-sm font-semibold bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 hover:border-[#1a3a6b] hover:bg-blue-50 transition-colors truncate"
+        >
+          {cobro.nombre
+            ? <span className="text-gray-900">{cobro.nombre}</span>
+            : <span className="text-gray-300 font-normal">Seleccionar cliente</span>
+          }
+        </button>
         <button
           onClick={onEliminar}
           aria-label={`Eliminar cobro de ${cobro.nombre || 'cliente'}`}
@@ -188,7 +190,7 @@ function CobroCard({ cobro, onActualizar, onEliminar, onAgregarFoto, onEliminarF
 interface Props {
   cobros: CobroCliente[];
   clientes: ClienteRegistrado[];
-  onAgregarCobro: () => void;
+  onAgregarCobro: (nombre: string) => void;
   onActualizarCobro: (id: string, campos: Partial<Pick<CobroCliente, 'nombre' | 'efectivo' | 'yape' | 'comentario'>>) => void;
   onEliminarCobro: (id: string) => void;
   onAgregarFoto: (cobroId: string, dataUrl: string) => void;
@@ -197,6 +199,8 @@ interface Props {
   totalYape: number;
   onImportarPedidos?: () => Promise<number>;
 }
+
+type ModalState = { modo: 'nuevo' } | { modo: 'editar'; cobroId: string } | null;
 
 export function CobrosModule({
   cobros,
@@ -212,6 +216,7 @@ export function CobrosModule({
 }: Props) {
   const [importando, setImportando] = useState(false);
   const [feedback, setFeedback]     = useState<string | null>(null);
+  const [modalCliente, setModalCliente] = useState<ModalState>(null);
 
   const handleImportar = useCallback(async () => {
     if (!onImportarPedidos || importando) return;
@@ -225,6 +230,16 @@ export function CobrosModule({
       setTimeout(() => setFeedback(null), 3000);
     }
   }, [onImportarPedidos, importando]);
+
+  function handleSeleccionarCliente(cliente: ClienteRegistrado) {
+    if (!modalCliente) return;
+    if (modalCliente.modo === 'nuevo') {
+      onAgregarCobro(cliente.nombre);
+    } else {
+      onActualizarCobro(modalCliente.cobroId, { nombre: cliente.nombre });
+    }
+    setModalCliente(null);
+  }
 
   return (
     <section className="space-y-3">
@@ -245,7 +260,7 @@ export function CobrosModule({
             </button>
           )}
           <button
-            onClick={onAgregarCobro}
+            onClick={() => setModalCliente({ modo: 'nuevo' })}
             className="flex items-center gap-1 text-xs font-bold text-[#1a3a6b] hover:bg-blue-50 px-3 py-1.5 rounded-xl transition-colors"
           >
             <span className="text-base leading-none">+</span> Agregar cobro
@@ -253,19 +268,12 @@ export function CobrosModule({
         </div>
       </div>
 
-      {/* Feedback de importación */}
+      {/* Feedback de importacion */}
       {feedback && (
         <p className="text-xs text-center text-gray-500 bg-gray-50 rounded-xl py-2 border border-gray-100">
           {feedback}
         </p>
       )}
-
-      {/* Datalist de clientes para autocompletar */}
-      <datalist id="liq-clientes-list">
-        {clientes.map(c => (
-          <option key={c.nombre} value={c.nombre} />
-        ))}
-      </datalist>
 
       {/* Estado vacio */}
       {cobros.length === 0 && (
@@ -284,6 +292,7 @@ export function CobrosModule({
           onEliminar={() => onEliminarCobro(cobro.id)}
           onAgregarFoto={url => onAgregarFoto(cobro.id, url)}
           onEliminarFoto={fotoId => onEliminarFoto(cobro.id, fotoId)}
+          onCambiarCliente={() => setModalCliente({ modo: 'editar', cobroId: cobro.id })}
         />
       ))}
 
@@ -307,6 +316,15 @@ export function CobrosModule({
             </div>
           )}
         </div>
+      )}
+
+      {/* Modal de seleccion de cliente */}
+      {modalCliente && (
+        <ModalPickCliente
+          clientes={clientes}
+          onSeleccionar={handleSeleccionarCliente}
+          onCerrar={() => setModalCliente(null)}
+        />
       )}
     </section>
   );

@@ -1,8 +1,9 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import type {
   Liquidacion, LiquidacionTotales,
-  CobroCliente, DiaViatico, GastoLinea, FotoEvidencia,
+  CobroCliente, DiaViatico, GastoLinea, FotoEvidencia, PreventaCliente,
 } from '../types/liquidacion';
+import type { ClienteRegistrado } from '../types/clients';
 import type { PedidoHistorial } from '../types/clients';
 import { liqGet, liqSet, histAll } from '../utils/db';
 
@@ -15,7 +16,7 @@ function genId(): string {
 }
 
 function crearVacia(fecha: string): Liquidacion {
-  return { id: `liq-${fecha}`, fecha, cobros: [], dias: [], fondoAsignado: 0, notas: '', guardada: false };
+  return { id: `liq-${fecha}`, fecha, cobros: [], dias: [], preventas: [], fondoAsignado: 0, notas: '', guardada: false };
 }
 
 function calcTotales(liq: Liquidacion): LiquidacionTotales {
@@ -44,6 +45,7 @@ const TOTALES_VACIO: LiquidacionTotales = {
 export function useLiquidacion() {
   const [liquidacion, setLiquidacion] = useState<Liquidacion | null>(null);
   const [_dbListo, _setDbListo] = useState(false);
+  const skipPersistRef = useRef(false);
 
   // Carga o inicializa la liquidación de hoy desde IndexedDB
   useEffect(() => {
@@ -51,8 +53,10 @@ export function useLiquidacion() {
     const fecha = getFechaHoy();
     liqGet(`liq-${fecha}`).then(raw => {
       if (!activo) return;
-      const rawLiq = raw as Omit<Liquidacion, 'guardada'> & { guardada?: boolean };
-      const loaded: Liquidacion = raw ? { ...rawLiq, guardada: rawLiq.guardada ?? false } : crearVacia(fecha);
+      const rawLiq = raw as Omit<Liquidacion, 'guardada' | 'preventas'> & { guardada?: boolean; preventas?: PreventaCliente[] };
+      const loaded: Liquidacion = raw
+        ? { ...rawLiq, guardada: rawLiq.guardada ?? false, preventas: rawLiq.preventas ?? [] }
+        : crearVacia(fecha);
       setLiquidacion(loaded);
       _setDbListo(true);
     }).catch(() => {
@@ -63,6 +67,10 @@ export function useLiquidacion() {
 
   // Persiste cada cambio en IndexedDB
   useEffect(() => {
+    if (skipPersistRef.current) {
+      skipPersistRef.current = false;
+      return;
+    }
     if (_dbListo && liquidacion) {
       liqSet(liquidacion as unknown as Record<string, unknown>).catch(() => {});
     }
@@ -190,10 +198,31 @@ export function useLiquidacion() {
     return nuevos.length;
   }
 
+  // ── Preventa ────────────────────────────────────────────────
+
+  function agregarPreventa(cliente: ClienteRegistrado): void {
+    const nuevo: PreventaCliente = { id: genId(), nombre: cliente.nombre, ubicacion: cliente.ubicacion, notas: '', visitado: false };
+    setLiquidacion(prev => prev ? { ...prev, preventas: [...(prev.preventas ?? []), nuevo] } : prev);
+  }
+
+  function actualizarPreventa(id: string, campos: Partial<Pick<PreventaCliente, 'notas' | 'visitado'>>): void {
+    setLiquidacion(prev => prev
+      ? { ...prev, preventas: (prev.preventas ?? []).map(p => p.id === id ? { ...p, ...campos } : p) }
+      : prev);
+  }
+
+  function eliminarPreventa(id: string): void {
+    setLiquidacion(prev => prev ? { ...prev, preventas: (prev.preventas ?? []).filter(p => p.id !== id) } : prev);
+  }
+
   // ── Guardar / marcar como finalizada ────────────────────────
 
-  function guardarLiquidacion(): void {
-    setLiquidacion(prev => prev ? { ...prev, guardada: !prev.guardada } : prev);
+  async function guardarLiquidacion(): Promise<void> {
+    if (!liquidacion) return;
+    const liqFinal = { ...liquidacion, guardada: true };
+    await liqSet(liqFinal as unknown as Record<string, unknown>);
+    skipPersistRef.current = true;
+    setLiquidacion(crearVacia(getFechaHoy()));
   }
 
   // ── General ─────────────────────────────────────────────────
@@ -225,5 +254,8 @@ export function useLiquidacion() {
     setNotas,
     importarPedidosDelDia,
     guardarLiquidacion,
+    agregarPreventa,
+    actualizarPreventa,
+    eliminarPreventa,
   };
 }

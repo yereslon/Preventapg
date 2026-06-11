@@ -3,13 +3,16 @@ import { useLiquidacion } from '../hooks/useLiquidacion';
 import { useClientRegistry } from '../hooks/useClientRegistry';
 import { CobrosModule } from './CobrosModule';
 import { ViaticosModule } from './ViaticosModule';
+import { PreventaModule } from './PreventaModule';
 import { formatSoles } from '../utils/format';
 import { exportarLiquidacionPDF } from '../utils/liquidacion-pdf';
 
-type Tab = 'cobros' | 'viaticos';
+type Tab = 'cobros' | 'viaticos' | 'preventa';
 
 export function LiquidacionPanel() {
   const [tab, setTab] = useState<Tab>('cobros');
+  const [modalGuardar, setModalGuardar] = useState(false);
+  const [guardando, setGuardando] = useState(false);
 
   const { clientes } = useClientRegistry();
 
@@ -32,7 +35,20 @@ export function LiquidacionPanel() {
     setNotas,
     importarPedidosDelDia,
     guardarLiquidacion,
+    agregarPreventa,
+    actualizarPreventa,
+    eliminarPreventa,
   } = useLiquidacion();
+
+  async function handleConfirmarGuardado() {
+    setGuardando(true);
+    try {
+      await guardarLiquidacion();
+    } finally {
+      setGuardando(false);
+      setModalGuardar(false);
+    }
+  }
 
   if (!_dbListo || !liquidacion) {
     return (
@@ -68,6 +84,21 @@ export function LiquidacionPanel() {
       {/* Tabs */}
       <div className="flex bg-gray-100 rounded-2xl p-1 gap-1">
         <button
+          onClick={() => setTab('preventa')}
+          className={`flex-1 py-2 px-3 text-xs font-bold rounded-xl transition-all ${
+            tab === 'preventa'
+              ? 'bg-white text-[#1a3a6b] shadow-sm'
+              : 'text-gray-400 hover:text-gray-600'
+          }`}
+        >
+          Ruta
+          {(liquidacion.preventas?.length ?? 0) > 0 && (
+            <span className="ml-1.5 text-[10px] font-extrabold text-blue-500">
+              {liquidacion.preventas.filter(p => p.visitado).length}/{liquidacion.preventas.length}
+            </span>
+          )}
+        </button>
+        <button
           onClick={() => setTab('cobros')}
           className={`flex-1 py-2 px-3 text-xs font-bold rounded-xl transition-all ${
             tab === 'cobros'
@@ -100,11 +131,21 @@ export function LiquidacionPanel() {
       </div>
 
       {/* Contenido activo */}
+      {tab === 'preventa' && (
+        <PreventaModule
+          preventas={liquidacion.preventas ?? []}
+          clientes={clientes}
+          onAgregarPreventa={agregarPreventa}
+          onActualizarPreventa={actualizarPreventa}
+          onEliminarPreventa={eliminarPreventa}
+        />
+      )}
+
       {tab === 'cobros' && (
         <CobrosModule
           cobros={liquidacion.cobros}
           clientes={clientes}
-          onAgregarCobro={() => agregarCobro('')}
+          onAgregarCobro={agregarCobro}
           onActualizarCobro={actualizarCobro}
           onEliminarCobro={eliminarCobro}
           onAgregarFoto={agregarFoto}
@@ -205,15 +246,77 @@ export function LiquidacionPanel() {
 
       {/* Boton guardar liquidacion */}
       <button
-        onClick={guardarLiquidacion}
-        className={`w-full py-3.5 rounded-2xl text-sm font-extrabold tracking-wide transition-all ${
-          liquidacion.guardada
-            ? 'bg-emerald-50 text-emerald-700 border-2 border-emerald-300 hover:bg-emerald-100'
-            : 'bg-[#1a3a6b] text-white hover:bg-[#15306b] active:scale-[0.98]'
-        }`}
+        onClick={() => setModalGuardar(true)}
+        disabled={!totales.tieneCobros && !totales.tieneGastos}
+        className="w-full py-3.5 rounded-2xl text-sm font-extrabold tracking-wide transition-all bg-[#1a3a6b] text-white hover:bg-[#15306b] active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed"
       >
-        {liquidacion.guardada ? '✓ Liquidacion guardada — toca para desmarcar' : 'Guardar liquidacion del dia'}
+        Guardar liquidacion del dia
       </button>
+
+      {/* Modal de confirmacion */}
+      {modalGuardar && (
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-sm p-4"
+          onClick={e => { if (e.target === e.currentTarget) setModalGuardar(false); }}
+        >
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm p-6 space-y-5 mb-2">
+
+            {/* Cabecera */}
+            <div>
+              <h2 className="text-base font-extrabold text-[#1a3a6b]">Confirmar guardado</h2>
+              <p className="text-xs text-gray-400 mt-0.5 capitalize">{fechaFormateada}</p>
+            </div>
+
+            {/* Resumen */}
+            <div className="bg-gray-50 rounded-2xl p-4 space-y-2.5">
+              {totales.tieneCobros && (
+                <>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-500">Efectivo cobrado</span>
+                    <span className="font-bold text-gray-800">{formatSoles(totales.totalEfectivo)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-500">Yape / Plin</span>
+                    <span className="font-bold text-gray-800">{formatSoles(totales.totalYape)}</span>
+                  </div>
+                </>
+              )}
+              {totales.tieneGastos && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-500">Total viaticos</span>
+                  <span className="font-bold text-amber-600">{formatSoles(totales.totalGastado)}</span>
+                </div>
+              )}
+              <div className="border-t border-gray-200 pt-2.5 flex justify-between text-sm">
+                <span className="font-bold text-gray-700">Efectivo a entregar</span>
+                <span className="font-extrabold text-[#1a3a6b] text-base">{formatSoles(totales.efectivoNetoEntregar)}</span>
+              </div>
+            </div>
+
+            <p className="text-xs text-gray-400 text-center leading-relaxed">
+              Al confirmar, la liquidacion quedara guardada y los registros del dia se limpiaran.
+            </p>
+
+            {/* Botones */}
+            <div className="flex gap-3">
+              <button
+                onClick={() => setModalGuardar(false)}
+                disabled={guardando}
+                className="flex-1 py-3 rounded-2xl border border-gray-200 text-sm font-bold text-gray-500 hover:bg-gray-50 transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleConfirmarGuardado}
+                disabled={guardando}
+                className="flex-1 py-3 rounded-2xl bg-[#1a3a6b] text-white text-sm font-bold hover:bg-[#15306b] active:scale-[0.98] transition-all disabled:opacity-60"
+              >
+                {guardando ? 'Guardando...' : 'Confirmar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

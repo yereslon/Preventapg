@@ -1,7 +1,8 @@
 import { useState, useRef, type ChangeEvent } from 'react';
 import { Menu, MenuButton, MenuItems, MenuItem } from '@headlessui/react';
-import { exportarDatos, importarDatos } from '../utils/backup';
+import { importarDatos } from '../utils/backup';
 import { useInstallPrompt } from '../hooks/useInstallPrompt';
+import { DatosModal } from './DatosModal';
 
 interface Props {
   busqueda: string;
@@ -25,6 +26,7 @@ export function AppHeader({
   onLiquidacion,
 }: Props) {
   const [importError, setImportError] = useState('');
+  const [datosAbierto, setDatosAbierto] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const { puedeInstalar, instalar } = useInstallPrompt();
 
@@ -149,25 +151,12 @@ export function AppHeader({
 
             <MenuItem>
               <button
-                onClick={exportarDatos}
+                onClick={() => setDatosAbierto(true)}
                 className="w-full text-left px-4 py-2.5 text-sm text-gray-700 data-[focus]:bg-gray-50 flex items-center gap-2 transition-colors"
               >
-                <span>⬇</span> Exportar datos
+                <span>💾</span> Datos
               </button>
             </MenuItem>
-
-            <MenuItem>
-              <button
-                onClick={() => fileRef.current?.click()}
-                className="w-full text-left px-4 py-2.5 text-sm text-gray-700 data-[focus]:bg-gray-50 flex items-center gap-2 transition-colors"
-              >
-                <span>⬆</span> Importar datos
-              </button>
-            </MenuItem>
-
-            {importError && (
-              <p className="px-4 py-2 text-xs text-red-600 border-t border-gray-100">{importError}</p>
-            )}
           </MenuItems>
         </Menu>
 
@@ -179,6 +168,14 @@ export function AppHeader({
           onChange={handleImportar}
         />
       </div>
+
+      {/* Modal de datos y almacenamiento */}
+      {datosAbierto && (
+        <DatosModal
+          onCerrar={() => setDatosAbierto(false)}
+          onRecargar={onRecargar}
+        />
+      )}
 
       {/* Búsqueda móvil */}
       <div className="sm:hidden px-4 pb-3 relative">

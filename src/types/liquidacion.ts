@@ -25,11 +25,20 @@ export interface DiaViatico {
   gastos: GastoLinea[];
 }
 
+export interface PreventaCliente {
+  id: string;
+  nombre: string;
+  ubicacion: string;
+  notas: string;
+  visitado: boolean;
+}
+
 export interface Liquidacion {
   id: string;
   fecha: string;
   cobros: CobroCliente[];
   dias: DiaViatico[];
+  preventas: PreventaCliente[];
   fondoAsignado: number;
   notas: string;
   guardada: boolean;
