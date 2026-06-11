@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 import { djb2 } from '../utils/hash';
 import type { CatalogItem } from '../types/catalog';
@@ -121,18 +121,23 @@ function ProductModal({ item, color, precioNegociado, onClose, onAgregar }: Moda
 
   const [selectedIdx, setSelectedIdx] = useState(0);
   const [cantidad, setCantidad] = useState(1);
-  const [precioInput, setPrecioInput] = useState('');
+  const [precioInput, setPrecioInput] = useState(() => {
+    const base = (allOpciones[0] ?? { precio: item.precio }).precio;
+    const negociado = precioNegociado !== undefined ? precioNegociado : base;
+    return negociado > 0 ? String(negociado) : '';
+  });
   const [nota, setNota] = useState('');
   const [agregado, setAgregado] = useState(false);
 
   const selectedOpcion = allOpciones[selectedIdx] ?? { unidad: item.unidad, precio: item.precio };
 
-  // Sync precio input when unit changes — pre-fill with negotiated price if available
-  useEffect(() => {
-    const base = selectedOpcion.precio > 0 ? selectedOpcion.precio : 0;
+  function handleSelectOpcion(idx: number) {
+    setSelectedIdx(idx);
+    const op = allOpciones[idx] ?? { unidad: item.unidad, precio: item.precio };
+    const base = op.precio > 0 ? op.precio : 0;
     const negociado = precioNegociado !== undefined ? precioNegociado : base;
     setPrecioInput(negociado > 0 ? String(negociado) : '');
-  }, [selectedIdx, selectedOpcion.precio, precioNegociado]);
+  }
 
   // Snaps typed decimals to nearest valid value: x.0, x.25, or x.5
   function snapCantidad(num: number): number {
@@ -200,7 +205,7 @@ function ProductModal({ item, color, precioNegociado, onClose, onAgregar }: Moda
               <div className="relative">
                 <select
                   value={selectedIdx}
-                  onChange={e => setSelectedIdx(Number(e.target.value))}
+                  onChange={e => handleSelectOpcion(Number(e.target.value))}
                   className="w-full appearance-none text-sm font-medium border border-gray-200 rounded-xl px-3 py-2.5 pr-8 text-gray-700 bg-gray-50 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-[#1a3a6b]/20 focus:border-[#1a3a6b] transition cursor-pointer"
                 >
                   {allOpciones.map((op, i) => (
