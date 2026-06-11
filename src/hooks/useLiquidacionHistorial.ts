@@ -12,7 +12,7 @@ export function useLiquidacionHistorial() {
     liqAll()
       .then(registros => {
         const pasados = (registros as Liquidacion[])
-          .map(r => ({ guardada: false, ...r }))          // backward compat
+          .map(r => { const l = r as Liquidacion; return { ...l, guardada: l.guardada ?? false }; })          // backward compat
           .filter(r => r.fecha !== hoy)
           .sort((a, b) => b.fecha.localeCompare(a.fecha));
         setHistorial(pasados);

@@ -32,8 +32,8 @@ describe('useLiquidacion — inicializacion', () => {
   it('carga liquidacion existente de hoy desde DB', async () => {
     const previa: Liquidacion = {
       id: keyHoy, fecha: fechaHoy,
-      cobros: [{ id: 'c1', nombre: 'Juan', efectivo: 100, yape: 50, fotos: [] }],
-      dias: [], fondoAsignado: 200, notas: 'test',
+      cobros: [{ id: 'c1', nombre: 'Juan', efectivo: 100, yape: 50, fotos: [], comentario: '' }],
+      dias: [], fondoAsignado: 200, notas: 'test', guardada: false,
     };
     await liqSet(previa as unknown as Record<string, unknown>);
 

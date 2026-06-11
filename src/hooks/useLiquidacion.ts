@@ -51,7 +51,8 @@ export function useLiquidacion() {
     const fecha = getFechaHoy();
     liqGet(`liq-${fecha}`).then(raw => {
       if (!activo) return;
-      const loaded = raw ? { guardada: false, ...(raw as Liquidacion) } : crearVacia(fecha);
+      const rawLiq = raw as Liquidacion;
+      const loaded = raw ? { ...rawLiq, guardada: rawLiq.guardada ?? false } : crearVacia(fecha);
       setLiquidacion(loaded);
       _setDbListo(true);
     }).catch(() => {
@@ -176,7 +177,7 @@ export function useLiquidacion() {
 
       // Suma todos los pedidos del día (un cliente puede tener más de uno)
       const totalDia = pedidosHoy.reduce((s, p) => s + p.total, 0);
-      nuevos.push({ id: genId(), nombre: r.nombre, efectivo: totalDia, yape: 0, fotos: [] });
+      nuevos.push({ id: genId(), nombre: r.nombre, efectivo: totalDia, yape: 0, fotos: [], comentario: '' });
       nombresExistentes.add(nombreNorm);
     }
 
