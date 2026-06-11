@@ -11,37 +11,40 @@ interface GastoRowProps {
 
 function GastoRow({ gasto, onActualizar, onEliminar }: GastoRowProps) {
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
       <input
         type="text"
         value={gasto.descripcion}
         placeholder="Descripcion del gasto"
         onChange={e => onActualizar({ descripcion: e.target.value })}
         aria-label="Descripcion del gasto"
-        className="flex-1 text-sm text-gray-800 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1a3a6b]/20 focus:border-[#1a3a6b] placeholder-gray-300 transition"
+        className="flex-1 text-sm text-gray-800 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-[#1a3a6b]/20 focus:border-[#1a3a6b] placeholder-gray-300 transition"
       />
-      <div className="relative w-28 shrink-0">
-        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-gray-400 pointer-events-none">
-          S/.
-        </span>
-        <input
-          type="number"
-          min="0"
-          step="0.10"
-          value={gasto.monto === 0 ? '' : gasto.monto}
-          placeholder="0.00"
-          onChange={e => onActualizar({ monto: parseFloat(e.target.value) || 0 })}
-          aria-label="Monto del gasto"
-          className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-xl text-sm font-semibold text-gray-800 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-200 focus:border-amber-500 transition"
-        />
+      <div className="flex items-center gap-2">
+        <div className="relative flex-1 sm:flex-none sm:w-32">
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-amber-500 pointer-events-none select-none">
+            S/.
+          </span>
+          <input
+            type="number"
+            min="0"
+            step="0.10"
+            inputMode="decimal"
+            value={gasto.monto === 0 ? '' : gasto.monto}
+            placeholder="0.00"
+            onChange={e => onActualizar({ monto: parseFloat(e.target.value) || 0 })}
+            aria-label="Monto del gasto"
+            className="w-full pl-9 pr-3 py-2.5 border border-amber-200 rounded-xl text-sm font-bold text-gray-800 bg-amber-50 focus:outline-none focus:ring-2 focus:ring-amber-200 focus:border-amber-400 transition placeholder:text-gray-300"
+          />
+        </div>
+        <button
+          onClick={onEliminar}
+          aria-label="Eliminar gasto"
+          className="shrink-0 w-8 h-8 flex items-center justify-center rounded-full text-gray-300 hover:text-red-600 hover:bg-red-50 transition-colors text-sm font-bold"
+        >
+          ✕
+        </button>
       </div>
-      <button
-        onClick={onEliminar}
-        aria-label="Eliminar gasto"
-        className="shrink-0 w-8 h-8 flex items-center justify-center rounded-full text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors text-sm"
-      >
-        &times;
-      </button>
     </div>
   );
 }
@@ -157,40 +160,41 @@ export function ViaticosModule({
     <section className="space-y-3">
 
       {/* Fondo de viaticos */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
-        <label className="block text-[10px] font-bold uppercase tracking-wide text-gray-400 mb-2">
+      <div className="bg-amber-50 rounded-2xl border border-amber-100 shadow-sm p-4">
+        <label className="block text-[9px] font-extrabold tracking-widest uppercase text-amber-600 mb-2">
           Fondo asignado
         </label>
         <div className="relative">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-gray-400 pointer-events-none">
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-amber-500 pointer-events-none select-none">
             S/.
           </span>
           <input
             type="number"
             min="0"
             step="1"
+            inputMode="decimal"
             value={fondoAsignado === 0 ? '' : fondoAsignado}
             placeholder="0.00"
             onChange={e => onSetFondoAsignado(parseFloat(e.target.value) || 0)}
             aria-label="Fondo de viaticos asignado"
-            className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-xl text-sm font-semibold text-gray-800 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-200 focus:border-amber-500 transition"
+            className="w-full pl-9 pr-3 py-2.5 border border-amber-200 rounded-xl text-sm font-bold text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-amber-200 focus:border-amber-400 transition placeholder:text-gray-300"
           />
         </div>
         {!tieneFondo && (
-          <p className="mt-1.5 text-[11px] text-gray-400">
-            Sin fondo asignado — los gastos no afectan el efectivo a entregar.
+          <p className="mt-1.5 text-[11px] text-amber-600/70">
+            Sin fondo — los gastos no afectan el efectivo a entregar.
           </p>
         )}
       </div>
 
       {/* Encabezado de dias */}
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-extrabold text-gray-600 uppercase tracking-wide">
+        <h3 className="text-xs font-extrabold text-gray-500 uppercase tracking-widest">
           Dias y gastos
         </h3>
         <button
           onClick={onAgregarDia}
-          className="flex items-center gap-1 text-xs font-bold text-[#1a3a6b] hover:bg-blue-50 px-3 py-1.5 rounded-xl transition-colors"
+          className="flex items-center gap-1 text-xs font-bold text-[#1a3a6b] bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-xl transition-colors"
         >
           <span className="text-base leading-none">+</span> Agregar dia
         </button>
@@ -198,9 +202,10 @@ export function ViaticosModule({
 
       {/* Estado vacio */}
       {dias.length === 0 && (
-        <div className="text-center py-8 text-gray-400">
-          <p className="text-sm">Sin dias registrados</p>
-          <p className="text-xs mt-1">Toca &ldquo;+ Agregar dia&rdquo; para empezar</p>
+        <div className="text-center py-10 text-gray-400">
+          <p className="text-2xl mb-2">🧾</p>
+          <p className="text-sm font-medium">Sin dias registrados</p>
+          <p className="text-xs mt-1 text-gray-300">Toca &ldquo;+ Agregar dia&rdquo; para empezar</p>
         </div>
       )}
 
