@@ -293,7 +293,19 @@ export function exportarLiquidacionPDF(liq: Liquidacion, tot: LiquidacionTotales
     });
   }
 
-  // ── Descargar ─────────────────────────────────────────────
+  // ── Compartir o descargar ─────────────────────────────────
 
-  doc.save(`liquidacion-${liq.fecha}.pdf`);
+  const nombre = `liquidacion-${liq.fecha}.pdf`;
+  const blob   = doc.output('blob');
+  const file   = new File([blob], nombre, { type: 'application/pdf' });
+
+  if (navigator.canShare?.({ files: [file] })) {
+    navigator.share({
+      files: [file],
+      title: `Liquidacion ${liq.fecha}`,
+      text: `Liquidacion del dia ${fechaLarga(liq.fecha)} — Plasticos Guerrero`,
+    }).catch(() => doc.save(nombre));
+  } else {
+    doc.save(nombre);
+  }
 }
