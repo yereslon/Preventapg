@@ -51,8 +51,8 @@ export function useLiquidacion() {
     const fecha = getFechaHoy();
     liqGet(`liq-${fecha}`).then(raw => {
       if (!activo) return;
-      const rawLiq = raw as Liquidacion;
-      const loaded = raw ? { ...rawLiq, guardada: rawLiq.guardada ?? false } : crearVacia(fecha);
+      const rawLiq = raw as Omit<Liquidacion, 'guardada'> & { guardada?: boolean };
+      const loaded: Liquidacion = raw ? { ...rawLiq, guardada: rawLiq.guardada ?? false } : crearVacia(fecha);
       setLiquidacion(loaded);
       _setDbListo(true);
     }).catch(() => {
