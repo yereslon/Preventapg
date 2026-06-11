@@ -4,11 +4,11 @@ import { liqAll } from '../utils/db';
 
 export function useLiquidacionHistorial() {
   const [historial, setHistorial] = useState<Liquidacion[]>([]);
-  const [cargando, setCargando]   = useState(true);
+  const [cargando, setCargando] = useState(true);
 
-  function recargar() {
-    setCargando(true);
-    liqAll()
+  // Carga async pura — solo llama setState en callbacks, nunca sincronamente
+  function cargar() {
+    return liqAll()
       .then(registros => {
         const guardadas = (registros as Liquidacion[])
           .map(r => {
@@ -23,7 +23,14 @@ export function useLiquidacionHistorial() {
       .finally(() => setCargando(false));
   }
 
-  useEffect(() => { recargar(); }, []);
+  // Para recargas manuales: pone cargando=true (en evento, no en effect)
+  function recargar() {
+    setCargando(true);
+    cargar();
+  }
+
+  // cargando empieza en true, el effect solo dispara la carga async
+  useEffect(() => { cargar(); }, []);
 
   return { historial, cargando, recargar };
 }
