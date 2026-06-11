@@ -2,6 +2,7 @@ import type { CatalogItem } from '../types/catalog';
 
 function normalizar(str: string): string {
   return str
+    .replace(/\*/g, 'x')
     .normalize('NFD')
     .replace(/[̀-ͯ]/g, '')
     .toLowerCase()
