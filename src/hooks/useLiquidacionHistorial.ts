@@ -8,14 +8,16 @@ export function useLiquidacionHistorial() {
 
   function recargar() {
     setCargando(true);
-    const hoy = new Date().toISOString().slice(0, 10);
     liqAll()
       .then(registros => {
-        const pasados = (registros as Liquidacion[])
-          .map(r => { const l = r as Omit<Liquidacion, 'guardada'> & { guardada?: boolean }; return { ...l, guardada: l.guardada ?? false } as Liquidacion; })          // backward compat
-          .filter(r => r.fecha !== hoy)
-          .sort((a, b) => b.fecha.localeCompare(a.fecha));
-        setHistorial(pasados);
+        const guardadas = (registros as Liquidacion[])
+          .map(r => {
+            const l = r as Omit<Liquidacion, 'guardada' | 'preventas'> & { guardada?: boolean; preventas?: Liquidacion['preventas'] };
+            return { ...l, guardada: l.guardada ?? false, preventas: l.preventas ?? [] } as Liquidacion;
+          })
+          .filter(r => r.guardada)
+          .sort((a, b) => b.fecha.localeCompare(a.fecha) || b.id.localeCompare(a.id));
+        setHistorial(guardadas);
       })
       .catch(() => {})
       .finally(() => setCargando(false));

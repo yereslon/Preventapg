@@ -219,10 +219,15 @@ export function useLiquidacion() {
 
   async function guardarLiquidacion(): Promise<void> {
     if (!liquidacion) return;
-    const liqFinal = { ...liquidacion, guardada: true };
-    await liqSet(liqFinal as unknown as Record<string, unknown>);
+    // Archivar bajo clave unica para que aparezca en historial
+    const archId = `liq-arch-${liquidacion.fecha}-${Date.now()}`;
+    await liqSet({ ...liquidacion, id: archId, guardada: true } as unknown as Record<string, unknown>);
+    // Sobreescribir el registro activo de hoy con uno vacio (reload = limpio)
+    const vacia = crearVacia(getFechaHoy());
+    await liqSet(vacia as unknown as Record<string, unknown>);
+    // Actualizar estado en memoria (el auto-persist se salta, DB ya esta correcto)
     skipPersistRef.current = true;
-    setLiquidacion(crearVacia(getFechaHoy()));
+    setLiquidacion(vacia);
   }
 
   // ── General ─────────────────────────────────────────────────
