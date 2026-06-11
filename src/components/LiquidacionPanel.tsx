@@ -63,70 +63,65 @@ export function LiquidacionPanel() {
   const mostrarResumen = totales.tieneCobros || totales.tieneFondo || totales.tieneGastos;
   const puedeGuardar  = totales.tieneCobros || totales.tieneGastos;
 
-  function ResumenBloque() {
-    if (!mostrarResumen) return null;
-    return (
-      <div className="bg-[#1a3a6b] rounded-2xl p-5 space-y-3">
-        <p className="text-[10px] font-bold uppercase tracking-wide text-white/50">
-          Resumen del dia
-        </p>
-        {totales.tieneCobros && (
-          <>
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-white/70">Efectivo cobrado</span>
-              <span className="text-sm font-extrabold text-white tabular-nums">
-                {formatSoles(totales.totalEfectivo)}
-              </span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-white/70">Yape / Plin</span>
-              <span className="text-sm font-extrabold text-white tabular-nums">
-                {formatSoles(totales.totalYape)}
-              </span>
-            </div>
-          </>
-        )}
-        {totales.tieneFondo && totales.saldoViaticos !== null && (
+  const resumenJSX = mostrarResumen ? (
+    <div className="bg-[#1a3a6b] rounded-2xl p-5 space-y-3">
+      <p className="text-[10px] font-bold uppercase tracking-wide text-white/50">
+        Resumen del dia
+      </p>
+      {totales.tieneCobros && (
+        <>
           <div className="flex justify-between items-center">
-            <span className="text-sm text-white/70">
-              {totales.saldoViaticos >= 0 ? 'Sobrante fondo' : 'Deficit fondo'}
-            </span>
-            <span className={`text-sm font-extrabold tabular-nums ${
-              totales.saldoViaticos >= 0 ? 'text-green-300' : 'text-red-300'
-            }`}>
-              {totales.saldoViaticos >= 0 ? '+' : '−'}{formatSoles(Math.abs(totales.saldoViaticos))}
+            <span className="text-sm text-white/70">Efectivo cobrado</span>
+            <span className="text-sm font-extrabold text-white tabular-nums">
+              {formatSoles(totales.totalEfectivo)}
             </span>
           </div>
-        )}
-        {!totales.tieneFondo && totales.tieneGastos && (
           <div className="flex justify-between items-center">
-            <span className="text-sm text-white/70">Total gastado</span>
-            <span className="text-sm font-extrabold text-amber-300 tabular-nums">
-              {formatSoles(totales.totalGastado)}
+            <span className="text-sm text-white/70">Yape / Plin</span>
+            <span className="text-sm font-extrabold text-white tabular-nums">
+              {formatSoles(totales.totalYape)}
             </span>
           </div>
-        )}
-        <div className="border-t border-white/20 pt-3 flex justify-between items-center">
-          <span className="text-sm font-bold text-white">Efectivo a entregar</span>
-          <span className="text-xl font-extrabold text-white tabular-nums">
-            {formatSoles(totales.efectivoNetoEntregar)}
+        </>
+      )}
+      {totales.tieneFondo && totales.saldoViaticos !== null && (
+        <div className="flex justify-between items-center">
+          <span className="text-sm text-white/70">
+            {totales.saldoViaticos >= 0 ? 'Sobrante fondo' : 'Deficit fondo'}
+          </span>
+          <span className={`text-sm font-extrabold tabular-nums ${
+            totales.saldoViaticos >= 0 ? 'text-green-300' : 'text-red-300'
+          }`}>
+            {totales.saldoViaticos >= 0 ? '+' : '−'}{formatSoles(Math.abs(totales.saldoViaticos))}
           </span>
         </div>
+      )}
+      {!totales.tieneFondo && totales.tieneGastos && (
+        <div className="flex justify-between items-center">
+          <span className="text-sm text-white/70">Total gastado</span>
+          <span className="text-sm font-extrabold text-amber-300 tabular-nums">
+            {formatSoles(totales.totalGastado)}
+          </span>
+        </div>
+      )}
+      <div className="border-t border-white/20 pt-3 flex justify-between items-center">
+        <span className="text-sm font-bold text-white">Efectivo a entregar</span>
+        <span className="text-xl font-extrabold text-white tabular-nums">
+          {formatSoles(totales.efectivoNetoEntregar)}
+        </span>
       </div>
-    );
-  }
+    </div>
+  ) : null;
 
-  function GuardarBtn() {
-    return (
-      <button
-        onClick={() => setModalGuardar(true)}
-        disabled={!puedeGuardar}
-        className="w-full py-3.5 rounded-2xl text-sm font-extrabold tracking-wide transition-all bg-[#1a3a6b] text-white hover:bg-[#15306b] active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed"
-      >
-        Guardar liquidacion del dia
-      </button>
-    );
-  }
+  const guardarBtnJSX = (
+    <button
+      onClick={() => setModalGuardar(true)}
+      disabled={!puedeGuardar}
+      className="w-full py-3.5 rounded-2xl text-sm font-extrabold tracking-wide transition-all bg-[#1a3a6b] text-white hover:bg-[#15306b] active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed"
+    >
+      Guardar liquidacion del dia
+    </button>
+  );
 
   return (
     <div>
@@ -235,14 +230,14 @@ export function LiquidacionPanel() {
 
           {/* Resumen + guardar — solo mobile (bajo el contenido) */}
           <div className="lg:hidden space-y-3 pb-8">
-            <ResumenBloque />
-            <GuardarBtn />
+            {resumenJSX}
+            {guardarBtnJSX}
           </div>
         </div>
 
         {/* ── Sidebar desktop ────────────────────────────────── */}
         <div className="hidden lg:flex lg:flex-col lg:gap-3 lg:self-start lg:sticky lg:top-4">
-          <ResumenBloque />
+          {resumenJSX}
           {!mostrarResumen && (
             <div className="bg-white rounded-2xl border border-gray-100 p-5 text-center space-y-1">
               <p className="text-sm font-bold text-gray-300">Sin registros aun</p>
@@ -251,7 +246,7 @@ export function LiquidacionPanel() {
               </p>
             </div>
           )}
-          <GuardarBtn />
+          {guardarBtnJSX}
           <button
             onClick={() => exportarLiquidacionPDF(liquidacion, totales)}
             className="w-full py-2.5 rounded-2xl text-xs font-bold text-[#1a3a6b] hover:bg-blue-50 border border-[#1a3a6b]/20 transition-colors"
