@@ -12,8 +12,7 @@ export function useInstallPrompt() {
   );
 
   useEffect(() => {
-    // Si ya corre en standalone no hay nada que escuchar
-    if (installed) return;
+    if (window.matchMedia('(display-mode: standalone)').matches) return;
 
     function onBeforeInstall(e: Event) {
       e.preventDefault();
