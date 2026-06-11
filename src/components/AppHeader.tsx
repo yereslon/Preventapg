@@ -1,6 +1,5 @@
-import { useState, useRef, type ChangeEvent } from 'react';
+import { useState } from 'react';
 import { Menu, MenuButton, MenuItems, MenuItem } from '@headlessui/react';
-import { importarDatos } from '../utils/backup';
 import { useInstallPrompt } from '../hooks/useInstallPrompt';
 import { DatosModal } from './DatosModal';
 
@@ -25,22 +24,8 @@ export function AppHeader({
   onHistorial,
   onLiquidacion,
 }: Props) {
-  const [importError, setImportError] = useState('');
   const [datosAbierto, setDatosAbierto] = useState(false);
-  const fileRef = useRef<HTMLInputElement>(null);
   const { puedeInstalar, instalar } = useInstallPrompt();
-
-  async function handleImportar(e: ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    try {
-      await importarDatos(file);
-      onRecargar();
-    } catch (err) {
-      setImportError(err instanceof Error ? err.message : 'Error al importar.');
-    }
-    e.target.value = '';
-  }
 
   return (
     <header
@@ -160,13 +145,6 @@ export function AppHeader({
           </MenuItems>
         </Menu>
 
-        <input
-          ref={fileRef}
-          type="file"
-          accept=".json"
-          className="hidden"
-          onChange={handleImportar}
-        />
       </div>
 
       {/* Modal de datos y almacenamiento */}

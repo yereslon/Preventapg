@@ -33,7 +33,7 @@ describe('useLiquidacion — inicializacion', () => {
     const previa: Liquidacion = {
       id: keyHoy, fecha: fechaHoy,
       cobros: [{ id: 'c1', nombre: 'Juan', efectivo: 100, yape: 50, fotos: [], comentario: '' }],
-      dias: [], fondoAsignado: 200, notas: 'test', guardada: false,
+      dias: [], preventas: [], fondoAsignado: 200, notas: 'test', guardada: false,
     };
     await liqSet(previa as unknown as Record<string, unknown>);
 
