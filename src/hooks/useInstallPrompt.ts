@@ -7,14 +7,13 @@ interface BeforeInstallPromptEvent extends Event {
 
 export function useInstallPrompt() {
   const [prompt, setPrompt] = useState<BeforeInstallPromptEvent | null>(null);
-  const [installed, setInstalled] = useState(false);
+  const [installed, setInstalled] = useState(
+    () => window.matchMedia('(display-mode: standalone)').matches
+  );
 
   useEffect(() => {
-    // Ya instalada si corre en standalone
-    if (window.matchMedia('(display-mode: standalone)').matches) {
-      setInstalled(true);
-      return;
-    }
+    // Si ya corre en standalone no hay nada que escuchar
+    if (installed) return;
 
     function onBeforeInstall(e: Event) {
       e.preventDefault();
