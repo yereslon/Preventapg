@@ -86,7 +86,6 @@ export function AppHeader({
         {/* Menú de opciones — Headless UI Menu */}
         <Menu as="div" className="relative shrink-0">
           <MenuButton
-            onClick={() => setImportError('')}
             className="flex items-center gap-1.5 bg-white/15 hover:bg-white/25 border border-white/20 text-white px-2.5 py-2 rounded-lg transition shrink-0"
             aria-label="Opciones"
           >
