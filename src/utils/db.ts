@@ -89,16 +89,15 @@ async function migrar(db: IDBDatabase): Promise<void> {
     const k = localStorage.key(i);
     if (k?.startsWith('pg_hist_')) histKeys.push(k);
   }
-  for (const k of histKeys) {
+  await Promise.all(histKeys.map(async k => {
     const raw = localStorage.getItem(k);
-    if (raw) {
-      try {
-        const nombre = k.slice('pg_hist_'.length);
-        await _tx(db, 'historial', 'readwrite', s => s.put({ nombre, ...JSON.parse(raw) }));
-      } catch { /* ignore */ }
-      localStorage.removeItem(k);
-    }
-  }
+    if (!raw) return;
+    try {
+      const nombre = k.slice('pg_hist_'.length);
+      await _tx(db, 'historial', 'readwrite', s => s.put({ nombre, ...JSON.parse(raw) }));
+    } catch { /* ignore */ }
+    localStorage.removeItem(k);
+  }));
 
   await _tx(db, 'kv', 'readwrite', s => s.put(true, '_migrado_v1'));
 }

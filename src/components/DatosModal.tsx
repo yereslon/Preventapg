@@ -42,11 +42,13 @@ export function DatosModal({ onCerrar, onRecargar }: Props) {
 
   useEffect(() => {
     if (!navigator.storage?.estimate) return;
+    let tid: ReturnType<typeof setTimeout>;
     navigator.storage.estimate().then(({ usage = 0, quota = 0 }) => {
       setUsadoMB(usage / 1048576);
       setCuotaMB(quota / 1048576);
-      setTimeout(() => setAnimado(true), 120);
+      tid = setTimeout(() => setAnimado(true), 120);
     });
+    return () => clearTimeout(tid);
   }, []);
 
   const porcentaje = usadoMB !== null ? Math.min((usadoMB / limiteMB) * 100, 100) : 0;

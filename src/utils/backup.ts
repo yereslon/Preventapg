@@ -63,14 +63,16 @@ async function _importarV1(datos: Record<string, unknown>): Promise<void> {
   const todosHist = await histAll() as { nombre: string }[];
   await Promise.all(todosHist.map(h => histDel(h.nombre)));
 
-  for (const [key, value] of Object.entries(datos)) {
-    if (key === 'pg_sesiones') {
-      await kvSet('pg_sesiones', value);
-    } else if (key.startsWith('pg_hist_')) {
-      const nombre = key.slice('pg_hist_'.length);
-      await histSet({ nombre, ...(value as Record<string, unknown>) });
-    }
-  }
+  await Promise.all(
+    Object.entries(datos).map(([key, value]) => {
+      if (key === 'pg_sesiones') return kvSet('pg_sesiones', value);
+      if (key.startsWith('pg_hist_')) {
+        const nombre = key.slice('pg_hist_'.length);
+        return histSet({ nombre, ...(value as Record<string, unknown>) });
+      }
+      return Promise.resolve();
+    })
+  );
 }
 
 async function _importarV2(datos: BackupV2Datos): Promise<void> {
@@ -84,6 +86,8 @@ async function _importarV2(datos: BackupV2Datos): Promise<void> {
 
   if (datos.sesiones !== undefined) await kvSet('pg_sesiones', datos.sesiones);
 
-  for (const h of datos.historial ?? []) await histSet(h);
-  for (const l of datos.liquidaciones ?? []) await liqSet(l);
+  await Promise.all([
+    ...(datos.historial     ?? []).map(h => histSet(h)),
+    ...(datos.liquidaciones ?? []).map(l => liqSet(l)),
+  ]);
 }
