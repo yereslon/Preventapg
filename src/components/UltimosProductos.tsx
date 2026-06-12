@@ -24,7 +24,7 @@ export function UltimosProductos({ productos, catalogData, onAgregar, clienteNom
           Últimos productos de {clienteNombre}
         </p>
         <div className="flex gap-3 overflow-x-auto pb-1 [scrollbar-width:none]">
-          {productos.map((p, i) => {
+          {productos.map((p) => {
             const catalogItem = findCatalogItem(p.nombre);
             const disponible = Boolean(catalogItem);
             const opcionIdx = catalogItem
@@ -34,7 +34,7 @@ export function UltimosProductos({ productos, catalogData, onAgregar, clienteNom
 
             return (
               <div
-                key={i}
+                key={`${p.nombre}||${p.unidad}`}
                 className="bg-white border border-amber-200 rounded-xl p-3 flex-shrink-0 w-36 flex flex-col gap-1.5"
               >
                 <p className="text-xs font-bold text-gray-800 leading-tight line-clamp-2 min-h-[2rem]">

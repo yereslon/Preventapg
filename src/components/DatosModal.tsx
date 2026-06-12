@@ -91,6 +91,9 @@ export function DatosModal({ onCerrar, onRecargar }: Props) {
   return (
     <div
       className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-sm p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Datos y almacenamiento"
       onClick={e => { if (e.target === e.currentTarget) onCerrar(); }}
     >
       <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm mb-2 overflow-hidden">

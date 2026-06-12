@@ -201,9 +201,10 @@ export function CatalogoView({
 
       {carritoAbierto && (
         <div className="lg:hidden fixed inset-0 z-40 flex">
-          <div
-            className="flex-1 bg-black/40 backdrop-blur-sm"
+          <button
+            className="flex-1 bg-black/40 backdrop-blur-sm cursor-default"
             onClick={onCerrarCarrito}
+            aria-label="Cerrar carrito"
           />
           <div className="w-80 bg-white h-full shadow-2xl flex flex-col p-5 overflow-y-auto">
             <div className="flex justify-between items-center mb-4">

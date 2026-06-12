@@ -260,6 +260,9 @@ export function LiquidacionPanel() {
       {modalGuardar && (
         <div
           className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 backdrop-blur-sm p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Confirmar guardado"
           onClick={e => { if (e.target === e.currentTarget) setModalGuardar(false); }}
         >
           <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm p-6 space-y-5 mb-2">

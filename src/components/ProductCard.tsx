@@ -161,6 +161,9 @@ function ProductModal({ item, color, precioNegociado, onClose, onAgregar }: Moda
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-label={item.nombre}
       onClick={onClose}
     >
       {/* Backdrop */}
@@ -209,7 +212,7 @@ function ProductModal({ item, color, precioNegociado, onClose, onAgregar }: Moda
                   className="w-full appearance-none text-sm font-medium border border-gray-200 rounded-xl px-3 py-2.5 pr-8 text-gray-700 bg-gray-50 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-[#1a3a6b]/20 focus:border-[#1a3a6b] transition cursor-pointer"
                 >
                   {allOpciones.map((op, i) => (
-                    <option key={i} value={i}>{op.unidad}</option>
+                    <option key={op.unidad} value={i}>{op.unidad}</option>
                   ))}
                 </select>
                 <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">▾</span>
