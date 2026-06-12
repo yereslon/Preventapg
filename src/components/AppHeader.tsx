@@ -1,7 +1,7 @@
-import { useState } from 'react';
-import { Menu, MenuButton, MenuItems, MenuItem } from '@headlessui/react';
-import { useInstallPrompt } from '../hooks/useInstallPrompt';
-import { DatosModal } from './DatosModal';
+import { useState } from "react";
+import { Menu, MenuButton, MenuItems, MenuItem } from "@headlessui/react";
+import { useInstallPrompt } from "../hooks/useInstallPrompt";
+import { DatosModal } from "./DatosModal";
 
 interface Props {
   busqueda: string;
@@ -28,15 +28,11 @@ export function AppHeader({
   const { puedeInstalar, instalar } = useInstallPrompt();
 
   return (
-    <header
-      className="sticky top-0 z-30 shadow-lg bg-[linear-gradient(135deg,#1a3a6b_0%,#2554a0_60%,#c0392b_100%)]"
-    >
+    <header className="sticky top-0 z-30 shadow-lg bg-[linear-gradient(135deg,#1a3a6b_0%,#2554a0_60%,#c0392b_100%)]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
         {/* Logo + marca */}
         <div className="flex items-center gap-3 min-w-0">
-          <span
-            className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-black text-sm shrink-0 bg-[#c0392b]"
-          >
+          <span className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-black text-sm shrink-0 bg-[#c0392b]">
             PG
           </span>
           <div className="min-w-0">
@@ -55,12 +51,12 @@ export function AppHeader({
             type="search"
             placeholder="Buscar por nombre, categoría…"
             value={busqueda}
-            onChange={e => setBusqueda(e.target.value)}
+            onChange={(e) => setBusqueda(e.target.value)}
             className="w-full pl-4 pr-8 py-2 rounded-lg bg-white/15 text-white placeholder-white/60 border border-white/20 outline-none focus:bg-white/25 focus:border-white/50 transition text-sm"
           />
           {busqueda && (
             <button
-              onClick={() => setBusqueda('')}
+              onClick={() => setBusqueda("")}
               aria-label="Limpiar búsqueda"
               className="absolute right-2.5 top-1/2 -translate-y-1/2 text-white/50 hover:text-white text-base leading-none transition-colors"
             >
@@ -74,7 +70,12 @@ export function AppHeader({
           onClick={onCarritoClick}
           className="relative flex items-center gap-2 bg-white/15 hover:bg-white/25 border border-white/20 text-white px-3 py-2 rounded-lg transition text-sm font-semibold shrink-0"
         >
-          <span key={cartBumpKey} className={cartBumpKey > 0 ? 'cart-bump' : ''}>🛒</span>
+          <span
+            key={cartBumpKey}
+            className={cartBumpKey > 0 ? "cart-bump" : ""}
+          >
+            🛒
+          </span>
           <span className="hidden sm:inline">Pedido</span>
           {totalUnidades > 0 && (
             <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-black w-5 h-5 rounded-full flex items-center justify-center">
@@ -90,7 +91,9 @@ export function AppHeader({
             aria-label="Opciones"
           >
             <span className="text-base leading-none">⚙</span>
-            <span className="hidden sm:inline text-xs font-semibold">Opciones</span>
+            <span className="hidden sm:inline text-xs font-semibold">
+              Opciones
+            </span>
           </MenuButton>
 
           <MenuItems
@@ -104,7 +107,7 @@ export function AppHeader({
                 onClick={onHistorial}
                 className="w-full text-left px-4 py-2.5 text-sm text-gray-700 data-[focus]:bg-gray-50 flex items-center gap-2 transition-colors"
               >
-                <span>⏰</span> Historial de pedidos
+                Historial de pedidos
               </button>
             </MenuItem>
 
@@ -113,7 +116,7 @@ export function AppHeader({
                 onClick={onLiquidacion}
                 className="w-full text-left px-4 py-2.5 text-sm text-gray-700 data-[focus]:bg-gray-50 flex items-center gap-2 transition-colors"
               >
-                <span>📋</span> Liquidacion del dia
+                Liquidacion del dia
               </button>
             </MenuItem>
 
@@ -126,7 +129,7 @@ export function AppHeader({
                     onClick={instalar}
                     className="w-full text-left px-4 py-2.5 text-sm font-semibold text-[#1a3a6b] data-[focus]:bg-blue-50 flex items-center gap-2 transition-colors"
                   >
-                    <span>📲</span> Instalar como app
+                    Instalar como app
                   </button>
                 </MenuItem>
                 <div className="border-t border-gray-100 my-1" />
@@ -138,12 +141,11 @@ export function AppHeader({
                 onClick={() => setDatosAbierto(true)}
                 className="w-full text-left px-4 py-2.5 text-sm text-gray-700 data-[focus]:bg-gray-50 flex items-center gap-2 transition-colors"
               >
-                <span>💾</span> Datos
+                Datos
               </button>
             </MenuItem>
           </MenuItems>
         </Menu>
-
       </div>
 
       {/* Modal de datos y almacenamiento */}
@@ -160,12 +162,12 @@ export function AppHeader({
           type="search"
           placeholder="Buscar por nombre, categoría…"
           value={busqueda}
-          onChange={e => setBusqueda(e.target.value)}
+          onChange={(e) => setBusqueda(e.target.value)}
           className="w-full pl-4 pr-8 py-2 rounded-lg bg-white/15 text-white placeholder-white/60 border border-white/20 outline-none focus:bg-white/25 transition text-sm"
         />
         {busqueda && (
           <button
-            onClick={() => setBusqueda('')}
+            onClick={() => setBusqueda("")}
             aria-label="Limpiar búsqueda"
             className="absolute right-6 top-1/2 -translate-y-1/2 text-white/50 hover:text-white text-base leading-none transition-colors"
           >

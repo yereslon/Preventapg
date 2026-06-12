@@ -1,6 +1,11 @@
-import { useState, useMemo } from 'react';
-import { Dialog, DialogBackdrop, DialogPanel, DialogTitle } from '@headlessui/react';
-import type { ClienteRegistrado } from '../types/clients';
+import { useState, useMemo } from "react";
+import {
+  Dialog,
+  DialogBackdrop,
+  DialogPanel,
+  DialogTitle,
+} from "@headlessui/react";
+import type { ClienteRegistrado } from "../types/clients";
 
 interface Props {
   open: boolean;
@@ -11,14 +16,17 @@ interface Props {
   puedeCancelar: boolean;
 }
 
-type Modo = 'registrado' | 'nuevo';
+type Modo = "registrado" | "nuevo";
 
-function buscarClientes(clientes: ClienteRegistrado[], q: string): ClienteRegistrado[] {
+function buscarClientes(
+  clientes: ClienteRegistrado[],
+  q: string,
+): ClienteRegistrado[] {
   if (!q.trim()) return clientes;
   const norm = (s: string) =>
-    s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+    s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
   const qn = norm(q);
-  return clientes.filter(c => norm(c.nombre).includes(qn));
+  return clientes.filter((c) => norm(c.nombre).includes(qn));
 }
 
 export function ClientModal({
@@ -29,13 +37,15 @@ export function ClientModal({
   onCancelar,
   puedeCancelar,
 }: Props) {
-  const [modo, setModo] = useState<Modo>('registrado');
-  const [busqueda, setBusqueda] = useState('');
-  const [nuevoNombre, setNuevoNombre] = useState('');
-  const [nuevaUbicacion, setNuevaUbicacion] = useState('');
-  const [error, setError] = useState('');
+  const [modo, setModo] = useState<Modo>("registrado");
+  const [busqueda, setBusqueda] = useState("");
+  const [nuevoNombre, setNuevoNombre] = useState("");
+  const [nuevaUbicacion, setNuevaUbicacion] = useState("");
+  const [error, setError] = useState("");
 
-  const nombresActivos = new Set(sesionesActivas.map(s => s.nombre.toLowerCase()));
+  const nombresActivos = new Set(
+    sesionesActivas.map((s) => s.nombre.toLowerCase()),
+  );
 
   const resultados = useMemo(
     () => buscarClientes(clientes, busqueda),
@@ -51,8 +61,14 @@ export function ClientModal({
   }
 
   function handleNuevo() {
-    if (!nuevoNombre.trim()) { setError('El nombre es obligatorio.'); return; }
-    if (!nuevaUbicacion.trim()) { setError('La ubicación es obligatoria.'); return; }
+    if (!nuevoNombre.trim()) {
+      setError("El nombre es obligatorio.");
+      return;
+    }
+    if (!nuevaUbicacion.trim()) {
+      setError("La ubicación es obligatoria.");
+      return;
+    }
     onConfirmar(nuevoNombre.trim(), nuevaUbicacion.trim(), true);
   }
 
@@ -79,9 +95,7 @@ export function ClientModal({
                      data-[closed]:scale-95 data-[closed]:opacity-0"
         >
           {/* Header */}
-          <div
-            className="flex items-center justify-between px-5 py-4 border-b border-gray-100 bg-[#1a3a6b]"
-          >
+          <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 bg-[#1a3a6b]">
             <DialogTitle className="text-white font-bold text-sm">
               Seleccionar cliente
             </DialogTitle>
@@ -99,17 +113,20 @@ export function ClientModal({
           {/* Toggle registrado / nuevo */}
           <div className="px-4 pt-4">
             <div className="flex gap-1 bg-blue-50 rounded-lg p-1">
-              {(['registrado', 'nuevo'] as Modo[]).map(m => (
+              {(["registrado", "nuevo"] as Modo[]).map((m) => (
                 <button
                   key={m}
-                  onClick={() => { setModo(m); setError(''); }}
+                  onClick={() => {
+                    setModo(m);
+                    setError("");
+                  }}
                   className={`flex-1 py-2 rounded-md text-xs font-semibold transition-colors ${
                     modo === m
-                      ? 'bg-[#1a3a6b] text-white shadow-sm'
-                      : 'text-gray-500 hover:text-gray-700'
+                      ? "bg-[#1a3a6b] text-white shadow-sm"
+                      : "text-gray-500 hover:text-gray-700"
                   }`}
                 >
-                  {m === 'registrado' ? 'Cliente registrado' : 'Nuevo cliente'}
+                  {m === "registrado" ? "Cliente registrado" : "Nuevo cliente"}
                 </button>
               ))}
             </div>
@@ -118,16 +135,21 @@ export function ClientModal({
           {/* Contenido */}
           <div className="px-4 py-3 space-y-3">
             {error && (
-              <p className="text-xs text-red-600 bg-red-50 px-3 py-2 rounded-lg">{error}</p>
+              <p className="text-xs text-red-600 bg-red-50 px-3 py-2 rounded-lg">
+                {error}
+              </p>
             )}
 
-            {modo === 'registrado' ? (
+            {modo === "registrado" ? (
               <>
                 <input
                   type="search"
                   placeholder="Buscar por nombre..."
                   value={busqueda}
-                  onChange={e => { setBusqueda(e.target.value); setError(''); }}
+                  onChange={(e) => {
+                    setBusqueda(e.target.value);
+                    setError("");
+                  }}
                   className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition"
                   autoFocus
                 />
@@ -137,7 +159,7 @@ export function ClientModal({
                       No se encontraron clientes.
                     </p>
                   )}
-                  {resultados.map(c => {
+                  {resultados.map((c) => {
                     const activo = nombresActivos.has(c.nombre.toLowerCase());
                     return (
                       <button
@@ -146,14 +168,20 @@ export function ClientModal({
                         disabled={activo}
                         className={`w-full text-left px-3 py-2.5 rounded-xl border transition ${
                           activo
-                            ? 'border-gray-100 bg-gray-50 opacity-50 cursor-not-allowed'
-                            : 'border-gray-100 hover:border-blue-200 hover:bg-blue-50 cursor-pointer'
+                            ? "border-gray-100 bg-gray-50 opacity-50 cursor-not-allowed"
+                            : "border-gray-100 hover:border-blue-200 hover:bg-blue-50 cursor-pointer"
                         }`}
                       >
-                        <p className="text-sm font-semibold text-gray-800 leading-tight">{c.nombre}</p>
-                        <p className="text-xs text-gray-400 mt-0.5">📍 {c.ubicacion || '—'}</p>
+                        <p className="text-sm font-semibold text-gray-800 leading-tight">
+                          {c.nombre}
+                        </p>
+                        <p className="text-xs text-gray-400 mt-0.5">
+                          {c.ubicacion || "—"}
+                        </p>
                         {activo && (
-                          <p className="text-[10px] text-blue-500 mt-0.5">Ya tiene pestaña abierta</p>
+                          <p className="text-[10px] text-blue-500 mt-0.5">
+                            Ya tiene pestaña abierta
+                          </p>
                         )}
                       </button>
                     );
@@ -169,7 +197,10 @@ export function ClientModal({
                   <input
                     type="text"
                     value={nuevoNombre}
-                    onChange={e => { setNuevoNombre(e.target.value); setError(''); }}
+                    onChange={(e) => {
+                      setNuevoNombre(e.target.value);
+                      setError("");
+                    }}
                     placeholder="Ej: Roberto Sánchez"
                     className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition"
                     autoFocus
@@ -182,7 +213,10 @@ export function ClientModal({
                   <input
                     type="text"
                     value={nuevaUbicacion}
-                    onChange={e => { setNuevaUbicacion(e.target.value); setError(''); }}
+                    onChange={(e) => {
+                      setNuevaUbicacion(e.target.value);
+                      setError("");
+                    }}
                     placeholder="Ej: Los Olivos"
                     className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition"
                   />
@@ -197,7 +231,7 @@ export function ClientModal({
             )}
           </div>
 
-          {modo === 'registrado' && <div className="pb-4" />}
+          {modo === "registrado" && <div className="pb-4" />}
         </DialogPanel>
       </div>
     </Dialog>

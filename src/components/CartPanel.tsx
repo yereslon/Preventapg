@@ -1,7 +1,7 @@
-import { useState, useRef, useEffect } from 'react';
-import type { CartState } from '../types/cart';
-import { formatSoles } from '../utils/format';
-import { QuantityInput } from './QuantityInput';
+import { useState, useRef, useEffect } from "react";
+import type { CartState } from "../types/cart";
+import { formatSoles } from "../utils/format";
+import { QuantityInput } from "./QuantityInput";
 
 const UNDO_DELAY_MS = 5000;
 
@@ -27,10 +27,17 @@ export function CartPanel({
   onVerPedido,
 }: Props) {
   const [confirmando, setConfirmando] = useState(false);
-  const [pendingDelete, setPendingDelete] = useState<PendingDelete | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<PendingDelete | null>(
+    null,
+  );
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  useEffect(() => () => { if (timerRef.current) clearTimeout(timerRef.current); }, []);
+  useEffect(
+    () => () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    },
+    [],
+  );
 
   function handleEliminar(cartKey: string, nombre: string) {
     // Commit any in-flight deletion before starting a new one
@@ -61,7 +68,9 @@ export function CartPanel({
     setConfirmando(false);
   }
 
-  const itemsVisibles = cart.items.filter(i => i.cartKey !== pendingDelete?.cartKey);
+  const itemsVisibles = cart.items.filter(
+    (i) => i.cartKey !== pendingDelete?.cartKey,
+  );
   const vacio = itemsVisibles.length === 0 && !pendingDelete;
 
   return (
@@ -89,7 +98,9 @@ export function CartPanel({
       {/* Confirmación de vaciar */}
       {confirmando && (
         <div className="mb-3 flex items-center justify-between gap-2 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
-          <p className="text-xs text-red-700 font-medium">¿Vaciar todo el pedido?</p>
+          <p className="text-xs text-red-700 font-medium">
+            ¿Vaciar todo el pedido?
+          </p>
           <div className="flex gap-1.5 shrink-0">
             <button
               onClick={handleVaciar}
@@ -106,7 +117,6 @@ export function CartPanel({
           </div>
         </div>
       )}
-
 
       {/* Toast undo */}
       {pendingDelete && (
@@ -128,12 +138,14 @@ export function CartPanel({
       <div className="flex-1 overflow-y-auto space-y-2 pr-1">
         {vacio ? (
           <div className="flex flex-col items-center justify-center h-40 text-gray-400 text-sm gap-2">
-            <span className="text-3xl">🛒</span>
             <p>El pedido está vacío</p>
           </div>
         ) : (
-          itemsVisibles.map(item => (
-            <div key={item.cartKey} className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+          itemsVisibles.map((item) => (
+            <div
+              key={item.cartKey}
+              className="bg-gray-50 border border-gray-200 rounded-lg p-3"
+            >
               <div className="flex justify-between items-start gap-2">
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-semibold text-gray-800 leading-snug">
@@ -160,7 +172,7 @@ export function CartPanel({
                   value={item.cantidad}
                   onIncrement={() => onSumarUno(item.cartKey)}
                   onDecrement={() => onQuitarUno(item.cartKey)}
-                  onChange={v => onCambiarCantidad(item.cartKey, v)}
+                  onChange={(v) => onCambiarCantidad(item.cartKey, v)}
                   productoNombre={item.nombre}
                 />
                 <span className="text-xs font-bold text-red-700 shrink-0">
