@@ -171,30 +171,48 @@ function DiaCard({ liq }: { liq: Liquidacion }) {
 // ── Vista principal del historial ──────────────────────────────
 
 export function LiquidacionHistorial() {
-  const { historial, cargando } = useLiquidacionHistorial();
-
-  if (cargando) {
-    return (
-      <div className="flex items-center justify-center h-32 text-gray-400 text-sm">
-        Cargando historial...
-      </div>
-    );
-  }
-
-  if (historial.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center h-40 text-center px-8">
-        <p className="text-gray-400 text-sm">Sin liquidaciones anteriores</p>
-        <p className="text-gray-300 text-xs mt-1">Las liquidaciones guardadas aparecerán aquí</p>
-      </div>
-    );
-  }
+  const { historial, cargando, recargar } = useLiquidacionHistorial();
 
   return (
     <div className="space-y-3">
-      {historial.map(liq => (
+
+      {/* Cabecera con boton de recarga */}
+      <div className="flex items-center justify-between px-1">
+        <p className="text-xs font-extrabold text-gray-500 uppercase tracking-widest">
+          Liquidaciones guardadas
+        </p>
+        <button
+          onClick={recargar}
+          disabled={cargando}
+          aria-label="Recargar historial"
+          className="flex items-center gap-1.5 text-xs font-semibold text-gray-400 hover:text-[#1a3a6b] hover:bg-blue-50 px-2.5 py-1.5 rounded-xl border border-gray-200 transition-colors disabled:opacity-40"
+        >
+          <span className={cargando ? 'animate-spin inline-block' : ''}>↻</span>
+          {cargando ? 'Cargando...' : 'Recargar'}
+        </button>
+      </div>
+
+      {/* Estado de carga */}
+      {cargando && (
+        <div className="flex items-center justify-center h-24 text-gray-400 text-sm">
+          Cargando historial...
+        </div>
+      )}
+
+      {/* Estado vacío */}
+      {!cargando && historial.length === 0 && (
+        <div className="flex flex-col items-center justify-center h-40 text-center px-8">
+          <p className="text-2xl mb-2">📋</p>
+          <p className="text-gray-400 text-sm font-medium">Sin liquidaciones guardadas</p>
+          <p className="text-gray-300 text-xs mt-1">Las liquidaciones guardadas aparecerán aquí</p>
+        </div>
+      )}
+
+      {/* Lista */}
+      {!cargando && historial.map(liq => (
         <DiaCard key={liq.id} liq={liq} />
       ))}
+
     </div>
   );
 }
