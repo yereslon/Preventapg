@@ -4,6 +4,8 @@ import type { CatalogItem, ExcelRow, PrecioUnidad } from '../types/catalog';
 import { WA_DEFAULT } from '../utils/whatsapp';
 import { djb2 } from '../utils/hash';
 
+const TIPOS_WA = new Set(['whatsapp', 'telefono', 'celular', 'phone']);
+
 interface UseExcelDataResult {
   data: CatalogItem[];
   ubicaciones: string[];
@@ -84,7 +86,7 @@ function parseConfiguracion(workbook: XLSX.WorkBook): { ubicaciones: string[]; w
 
       if (tipo === 'ubicación' || tipo === 'ubicacion') {
         ubicaciones.push(valor);
-      } else if (['whatsapp', 'telefono', 'celular', 'phone'].includes(tipo)) {
+      } else if (TIPOS_WA.has(tipo)) {
         whatsapp = valor.replace(/[^0-9]/g, '') || WA_DEFAULT;
       }
     }
