@@ -34,7 +34,7 @@ export default defineConfig({
         runtimeCaching: [
           {
             urlPattern: /\.xlsx$/i,
-            handler: 'CacheFirst',
+            handler: 'NetworkFirst',
             options: {
               cacheName: 'excel-cache',
               expiration: { maxEntries: 5, maxAgeSeconds: 60 * 60 * 24 * 7 },
