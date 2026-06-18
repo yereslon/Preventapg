@@ -106,9 +106,11 @@ describe('AppHeader', () => {
     expect(onLiquidacion).toHaveBeenCalledTimes(1);
   });
 
-  it('llama exportarDatos al hacer clic en "Exportar datos"', async () => {
+  it('llama exportarDatos al hacer clic en "Exportar datos" dentro del modal de datos', async () => {
     render(<AppHeader {...BASE} />);
     await userEvent.click(screen.getByRole('button', { name: 'Opciones' }));
+    await userEvent.click(screen.getByText('Datos'));
+    expect(screen.getByRole('dialog', { name: 'Datos y almacenamiento' })).toBeInTheDocument();
     await userEvent.click(screen.getByText('Exportar datos'));
     expect(exportarDatos).toHaveBeenCalledTimes(1);
   });

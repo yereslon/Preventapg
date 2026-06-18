@@ -19,23 +19,29 @@ function buildHistorial(
   historialPrevio: ClienteHistorial,
   nuevoPedido: PedidoHistorial,
 ): ClienteHistorial {
-  const ultimosProductos: ProductoHistorial[] = items.slice(0, 10).map(i => ({
-    nombre: i.nombre,
-    precio: i.precio,
-    precioBase: i.preciosExtra.find(p => p.unidad === i.unidad)?.precio ?? i.precio,
-    unidad: i.unidad,
-    categoria: i.categoria,
-  }));
+  const currentKeys = new Set(items.map(i => `${i.nombre}_${i.unidad}`));
+  const ultimosProductos: ProductoHistorial[] = [
+    ...items.map(i => ({
+      nombre: i.nombre,
+      precio: i.precio,
+      precioBase: i.preciosExtra.find(p => p.unidad === i.unidad)?.precio ?? i.precio,
+      unidad: i.unidad,
+      categoria: i.categoria,
+    })),
+    ...(historialPrevio.ultimosProductos ?? []).filter(p => !currentKeys.has(`${p.nombre}_${p.unidad}`)),
+  ];
 
-  const preciosNegociados: Record<string, number> = {};
+  const preciosNegociados: Record<string, number> = { ...(historialPrevio.preciosNegociados ?? {}) };
   items.forEach(i => {
     const catalogPrice = i.preciosExtra.find(p => p.unidad === i.unidad)?.precio ?? i.precio;
     if (i.precio !== catalogPrice) {
       preciosNegociados[`${i.nombre}_${i.unidad}`] = i.precio;
+    } else {
+      delete preciosNegociados[`${i.nombre}_${i.unidad}`];
     }
   });
 
-  const pedidos = [nuevoPedido, ...(historialPrevio.pedidos ?? [])].slice(0, 30);
+  const pedidos = [nuevoPedido, ...(historialPrevio.pedidos ?? [])];
 
   return { ultimosProductos, preciosNegociados, pedidos };
 }

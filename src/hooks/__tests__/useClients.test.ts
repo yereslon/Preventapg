@@ -229,8 +229,8 @@ describe('useClients — confirmarSesion', () => {
     expect(hist.pedidos[1].items[0].cantidad).toBe(2);
   });
 
-  it('limita pedidos a 30 entradas', async () => {
-    const pedidosPrevios = Array.from({ length: 30 }, (_, i) => ({
+  it('acumula pedidos sin limite de entradas', async () => {
+    const pedidosPrevios = Array.from({ length: 100 }, (_, i) => ({
       numeroPedido: `PED-${i}`,
       fecha: '01/01/2026',
       total: 10,
@@ -254,7 +254,7 @@ describe('useClients — confirmarSesion', () => {
     });
 
     const hist = await histGet(normalizarNombreCliente('Luis Torres')) as ClienteHistorial;
-    expect(hist.pedidos).toHaveLength(30);
+    expect(hist.pedidos).toHaveLength(101);
     expect(hist.pedidos[0].items).toHaveLength(1);
   });
 });
